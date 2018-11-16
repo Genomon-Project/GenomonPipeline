@@ -26,7 +26,7 @@ export PATH=${{blat_home%/*}}:{htslib}:$PYTHONHOME/bin:$PATH
 export LD_LIBRARY_PATH={ld_library_path}
 export PYTHONPATH={pythonpath}
 
-{genomon_sv} filt {input_bam} {output_prefix} {reference_genome} {annotation_dir} {param} || exit $?
+{genomon_sv} filt {input_bam} {output_prefix} {reference_genome} {param} || exit $?
 
 mv {output_prefix}.genomonSV.result.txt {output_prefix}.genomonSV.result.txt.tmp || exit $?
 
@@ -36,7 +36,7 @@ cat {output_prefix}.genomonSV.result.txt.tmp >> {output_prefix}.genomonSV.result
 
 rm -rf {output_prefix}.genomonSV.result.txt.tmp
  
-{sv_utils} filter {output_prefix}.genomonSV.result.txt {output_prefix}.genomonSV.result.filt.txt.tmp {sv_utils_annotation_dir} {sv_utils_param} || exit $?
+{sv_utils} filter {output_prefix}.genomonSV.result.txt {output_prefix}.genomonSV.result.filt.txt.tmp {sv_utils_param} || exit $?
 
 mv {output_prefix}.genomonSV.result.filt.txt.tmp {output_prefix}.genomonSV.result.filt.txt
 """
