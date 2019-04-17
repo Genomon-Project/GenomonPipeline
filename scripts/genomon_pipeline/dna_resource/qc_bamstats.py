@@ -21,10 +21,11 @@ set -o pipefail
 
 # set python environment
 export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
 export PYTHONPATH={pythonpath}
+export PATH=$PYTHONHOME/bin:{perl}:$PATH
+export PERL5LIB={perl5lib}
 
-{genomon_qc} bamstats {input_file} {output_file} --perl5lib {perl5lib} --bamstats {bamstats}
+{genomon_qc} bamstats {input_file} {output_file} --bamstats {bamstats}
 """
 
     def __init__(self, qsub_option, script_dir):

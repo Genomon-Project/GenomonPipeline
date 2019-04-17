@@ -62,15 +62,11 @@ rna_reference_list = ["star_genome"
                       ]
            
 rna_software_list = ["samtools",
-                     "tophat2",
                      "STAR",
-                     "STAR-Fusion",
                      "fusionfusion"
                      ]
 
-rna_software_version = {"tophat2":"tophat2",
-                        "STAR": "STAR",
-                        "STAR-Fusion":"STAR-Fusion",
+rna_software_version = {"STAR": "STAR",
                         "fusionfusion":"fusionfusion",
                         } 
 

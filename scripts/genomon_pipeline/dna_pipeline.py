@@ -732,6 +732,7 @@ def bam_stats(input_file, output_file):
                  "pythonpath": genomon_conf.get("ENV", "PYTHONPATH"),
                  "genomon_qc": genomon_conf.get("SOFTWARE", "genomon_qc"),
                  "bamstats": genomon_conf.get("SOFTWARE", "bamstats"),
+                 "perl": genomon_conf.get("ENV", "PERL"),
                  "perl5lib": genomon_conf.get("ENV", "PERL5LIB"),
                  "input_file": input_file,
                  "output_file": output_file}
