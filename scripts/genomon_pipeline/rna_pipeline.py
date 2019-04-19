@@ -234,7 +234,8 @@ def task_star_align(input_files, output_file):
     dir_name = os.path.dirname(output_file)
     sample_name = os.path.basename(dir_name)
 
-    arguments = {"star": genomon_conf.get("SOFTWARE", "STAR"),
+    arguments = {"ld_library_path": genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
+                 "star": genomon_conf.get("SOFTWARE", "STAR"),
                  "star_genome": genomon_conf.get("REFERENCE", "star_genome"),
                  "additional_params": genomon_conf.get("star_align", "star_params"),
                  "samtools": genomon_conf.get("SOFTWARE", "samtools"),

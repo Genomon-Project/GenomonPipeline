@@ -19,6 +19,8 @@ date                    # print date
 set -xv
 set -o pipefail
 
+export LD_LIBRARY_PATH={ld_library_path}
+
 {star} --genomeDir {star_genome} --readFilesIn {fastq1} {fastq2} --outFileNamePrefix {out_prefix} {additional_params} 
 
 {samtools} sort -T {out_prefix}Aligned.sortedByCoord.out {samtools_sort_params} {out_prefix}Aligned.out.bam -O bam > {out_prefix}Aligned.sortedByCoord.out.bam 
