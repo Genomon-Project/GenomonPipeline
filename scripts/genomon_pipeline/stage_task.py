@@ -4,7 +4,6 @@ import os
 import sys
 import datetime
 import subprocess
-from genomon_pipeline.config.run_conf import *
 
 file_timestamp_format = "{name}_{year:0>4d}{month:0>2d}{day:0>2d}_{hour:0>2d}{min:0>2d}{second:0>2d}_{msecond:0>6d}"
 
@@ -47,7 +46,11 @@ class Stage_task(object):
             jt.errorPath = ':' + log_dir
             jt.nativeSpecification = self.qsub_option
             jt.remoteCommand = shell_script_full_path
-            os.chmod(shell_script_full_path, 0750)
+            if sys.version_info.major == 2:
+                mode = 0750
+            else:
+                mode = 0o750
+            os.chmod(shell_script_full_path, mode)
 
             returncode = 0
             returnflag = True

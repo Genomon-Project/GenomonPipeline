@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class SV_parse(Stage_task):
+class SV_parse(st.Stage_task):
 
     task_name = "sv_parse"
 

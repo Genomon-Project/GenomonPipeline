@@ -1,44 +1,43 @@
 #! /usr/bin/env python
 
-from ruffus import *
-from genomon_pipeline.config.genomon_conf import *
-from genomon_pipeline.config.run_conf import *
-from genomon_pipeline.config.sample_conf import *
-
+import os
+import genomon_pipeline.config.genomon_conf as gc
+import genomon_pipeline.config.run_conf as rc
+import genomon_pipeline.config.sample_conf as sc
 
 def main(args):
 
     ###
     # set run_conf
-    run_conf.sample_conf_file = args.sample_conf_file
-    run_conf.analysis_type = args.analysis_type
-    run_conf.project_root = os.path.abspath(args.project_root)
-    run_conf.genomon_conf_file = args.genomon_conf_file
-    run_conf.drmaa = False if args.disable_drmaa else True
+    rc.run_conf.sample_conf_file = args.sample_conf_file
+    rc.run_conf.analysis_type = args.analysis_type
+    rc.run_conf.project_root = os.path.abspath(args.project_root)
+    rc.run_conf.genomon_conf_file = args.genomon_conf_file
+    rc.run_conf.drmaa = False if args.disable_drmaa else True
 
     ###
     # read sample list file
-    sample_conf.parse_file(run_conf.sample_conf_file)
+    sc.sample_conf.parse_file(rc.run_conf.sample_conf_file)
 
     ###
     # set genomon_conf and task parameter config data
-    genomon_conf.read(run_conf.genomon_conf_file)
+    gc.genomon_conf.read(rc.run_conf.genomon_conf_file)
     
-    if run_conf.analysis_type == "dna":
-        dna_genomon_conf_check()
-        dna_software_version_set()
-    elif run_conf.analysis_type == "rna":
-        rna_genomon_conf_check()
-        rna_software_version_set()
+    if rc.run_conf.analysis_type == "dna":
+        gc.dna_genomon_conf_check()
+        gc.dna_software_version_set()
+    elif rc.run_conf.analysis_type == "rna":
+        gc.rna_genomon_conf_check()
+        gc.rna_software_version_set()
     else:
         raise NotImplementedError("Just DNA and RNA pipeline is prepared")
 
     if not (args.param_check):
-        if run_conf.analysis_type == "dna":
-            import dna_pipeline
-        elif run_conf.analysis_type == "rna":
-            import rna_pipeline
-        pipeline_run(
+        if rc.run_conf.analysis_type == "dna":
+            import genomon_pipeline.dna_pipeline as pipeline
+        elif rc.run_conf.analysis_type == "rna":
+            import genomon_pipeline.rna_pipeline as pipeline
+        pipeline.pipeline_run(
                      verbose = args.verbose, 
                      multiprocess = args.multiprocess
                     )

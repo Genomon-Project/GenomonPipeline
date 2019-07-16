@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Intron_retention(Stage_task):
+class Intron_retention(st.Stage_task):
 
     task_name = "intron_retention"
 

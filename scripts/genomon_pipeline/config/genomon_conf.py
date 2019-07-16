@@ -1,13 +1,17 @@
 #! /usr/bin/env python
 
-import sys, os, pwd, subprocess, ConfigParser
+import os, pwd, subprocess, sys
+if sys.version_info.major == 2:
+    import ConfigParser as cp
+else:
+    import configparser as cp
 from genomon_pipeline.__init__ import __version__
-from genomon_pipeline.config.genomon_conf import *
-from genomon_pipeline.config.run_conf import *
+import genomon_pipeline.config.genomon_conf
+import genomon_pipeline.config.run_conf
 
 global genomon_conf
 
-genomon_conf = ConfigParser.SafeConfigParser()
+genomon_conf = cp.SafeConfigParser()
 
 software_version ={'genomon_pipeline':'genomon_pipeline-'+__version__}
 

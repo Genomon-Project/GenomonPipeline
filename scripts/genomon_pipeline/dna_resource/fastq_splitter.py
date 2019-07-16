@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Fastq_splitter(Stage_task):
+class Fastq_splitter(st.Stage_task):
 
     task_name = "fastq_splitter"
 

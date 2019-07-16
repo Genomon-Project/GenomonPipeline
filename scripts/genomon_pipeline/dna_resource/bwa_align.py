@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Bwa_align(Stage_task):
+class Bwa_align(st.Stage_task):
 
     task_name = "bwa_align"
 

@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Star_align(Stage_task):
+class Star_align(st.Stage_task):
 
     task_name = "star_align"
 

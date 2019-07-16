@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Res_QC_Bamstats(Stage_task):
+class Res_QC_Bamstats(st.Stage_task):
 
     task_name = "qc_bamstats"
 

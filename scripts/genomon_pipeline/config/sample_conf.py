@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import os
-from genomon_pipeline.config.run_conf import *
 
 class Sample_conf(object):
 

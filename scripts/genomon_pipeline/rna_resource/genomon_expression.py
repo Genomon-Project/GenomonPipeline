@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Genomon_expression(Stage_task):
+class Genomon_expression(st.Stage_task):
 
     task_name = "genomon_expression"
 

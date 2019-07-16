@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Mutation_call(Stage_task):
+class Mutation_call(st.Stage_task):
 
     task_name = "mutation_call"
 

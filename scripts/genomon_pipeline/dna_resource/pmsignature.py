@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-from genomon_pipeline.stage_task import *
+import genomon_pipeline.stage_task as st
 
-class Res_Pmsignature(Stage_task):
+class Res_Pmsignature(st.Stage_task):
 
     task_name = "pmsignature"
 
