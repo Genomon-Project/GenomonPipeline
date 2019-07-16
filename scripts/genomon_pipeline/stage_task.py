@@ -4,6 +4,7 @@ import os
 import sys
 import datetime
 import subprocess
+import stat
 
 file_timestamp_format = "{name}_{year:0>4d}{month:0>2d}{day:0>2d}_{hour:0>2d}{min:0>2d}{second:0>2d}_{msecond:0>6d}"
 
@@ -46,7 +47,7 @@ class Stage_task(object):
             jt.errorPath = ':' + log_dir
             jt.nativeSpecification = self.qsub_option
             jt.remoteCommand = shell_script_full_path
-            os.chmod(shell_script_full_path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP)
+            os.chmod(shell_script_full_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
 
             returncode = 0
             returnflag = True

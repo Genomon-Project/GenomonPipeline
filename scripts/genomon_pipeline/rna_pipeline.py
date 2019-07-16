@@ -125,9 +125,9 @@ for target_sample_dict in (sc.sample_conf.bam_import, sc.sample_conf.fastq, sc.s
         if not os.path.isdir(script_dir): os.mkdir(script_dir)
         if not os.path.isdir(log_dir): os.mkdir(log_dir)
 
-genomon_conf_name, genomon_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.gc.genomon_conf_file))
+genomon_conf_name, genomon_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.genomon_conf_file))
 sample_conf_name, sample_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
-shutil.copyfile(rc.run_conf.gc.genomon_conf_file, rc.run_conf.project_root + '/config/' + genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + genomon_conf_ext)
+shutil.copyfile(rc.run_conf.genomon_conf_file, rc.run_conf.project_root + '/config/' + genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + genomon_conf_ext)
 shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sample_conf_ext)
 
 expression_bams = []
