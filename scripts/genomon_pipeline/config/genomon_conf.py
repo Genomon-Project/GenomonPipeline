@@ -6,8 +6,7 @@ if sys.version_info.major == 2:
 else:
     import configparser as cp
 from genomon_pipeline.__init__ import __version__
-import genomon_pipeline.config.genomon_conf
-import genomon_pipeline.config.run_conf
+import genomon_pipeline.config.run_conf as rc
 
 global genomon_conf
 
@@ -220,7 +219,7 @@ def get_version(key):
 def get_meta_info(softwares):
 
     print_meta_info = "# Version: " + ' '.join([software_version[x] for x in softwares])
-    print_meta_info = print_meta_info + '\n' + "# Analysis Date: " + run_conf.analysis_date
+    print_meta_info = print_meta_info + '\n' + "# Analysis Date: " + rc.run_conf.analysis_date
     print_meta_info = print_meta_info + '\n' + "# User: " + pwd.getpwuid(os.getuid()).pw_name
    
     return print_meta_info

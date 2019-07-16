@@ -134,8 +134,8 @@ qc_merge_list = []
 for sample in sc.sample_conf.qc:
     if os.path.exists(rc.run_conf.project_root + '/qc/' + sample + '/' + sample + '.genomonQC.result.txt'): continue
     qc_merge_list.append(
-        [rc.run_confproject_root + '/qc/' + sample + '/' + sample + '.bamstats',
-         rc.run_confproject_root + '/qc/' + sample + '/' + sample + '.coverage'])
+        [rc.run_conf.project_root + '/qc/' + sample + '/' + sample + '.bamstats',
+         rc.run_conf.project_root + '/qc/' + sample + '/' + sample + '.coverage'])
     if not os.path.exists(rc.run_conf.project_root + '/qc/' + sample + '/' + sample + '.bamstats'):
         qc_bamstats_list.append(rc.run_conf.project_root + '/bam/' + sample +'/'+ sample +'.markdup.bam')
     if not os.path.exists(rc.run_conf.project_root + '/qc/' + sample + '/' + sample + '.coverage'):
@@ -174,7 +174,7 @@ if pa_outputs_qc["run_pa"] == True:
 ### 
 # input/output lists for paplot
 ###
-paplot_output = rc.run_confproject_root + '/paplot/' + sample_conf_name + '/index.html'
+paplot_output = rc.run_conf.project_root + '/paplot/' + sample_conf_name + '/index.html'
 
 ## mutation
 use_mutations = []
@@ -196,7 +196,7 @@ if os.path.exists(paplot_output) == False or pa_outputs_mutation["run_pa"] == Tr
 ind_outputs = []
 ind_exists = True
 for i in range(gc.genomon_conf.getint("pmsignature_ind", "signum_min"), gc.genomon_conf.getint("pmsignature_ind", "signum_max") + 1):
-    fname = rc.run_confproject_root + '/pmsignature/' + sample_conf_name + '/pmsignature.ind.result.%d.json' % i
+    fname = rc.run_conf.project_root + '/pmsignature/' + sample_conf_name + '/pmsignature.ind.result.%d.json' % i
     ind_outputs.append(fname)
     if not os.path.exists(fname): ind_exists = False
         
@@ -213,7 +213,7 @@ if len(sc.sample_conf.mutation_call) > 0 and gc.genomon_conf.getboolean("pmsigna
 full_outputs = []
 full_exists = True
 for i in range(gc.genomon_conf.getint("pmsignature_full", "signum_min"), gc.genomon_conf.getint("pmsignature_full", "signum_max") + 1):
-    fname = rc.run_confproject_root + '/pmsignature/' + sample_conf_name + '/pmsignature.full.result.%d.json' % i
+    fname = rc.run_conf.project_root + '/pmsignature/' + sample_conf_name + '/pmsignature.full.result.%d.json' % i
     full_outputs.append(fname)
     if not os.path.exists(fname): full_exists = False
         
@@ -302,30 +302,30 @@ if not os.path.isdir(rc.run_conf.project_root + '/config'): os.mkdir(rc.run_conf
 for outputfiles in (bam2fastq_output_list, linked_fastq_list):
     for outputfile in outputfiles:
         sample = os.path.basename(os.path.dirname(outputfile[0][0]))
-        fastq_dir = rc.run_confproject_root + '/fastq/' + sample
-        bam_dir = rc.run_confproject_root + '/bam/' + sample
+        fastq_dir = rc.run_conf.project_root + '/fastq/' + sample
+        bam_dir = rc.run_conf.project_root + '/bam/' + sample
         if not os.path.isdir(fastq_dir): os.mkdir(fastq_dir)
         if not os.path.isdir(bam_dir): os.mkdir(bam_dir)
 
 for target_sample_dict in (sc.sample_conf.bam_import, sc.sample_conf.fastq, sc.sample_conf.bam_tofastq):
     for sample in target_sample_dict:
-        script_dir = rc.run_confproject_root + '/script/' + sample
-        log_dir = rc.run_confproject_root + '/log/' + sample
+        script_dir = rc.run_conf.project_root + '/script/' + sample
+        log_dir = rc.run_conf.project_root + '/log/' + sample
         if not os.path.isdir(script_dir): os.mkdir(script_dir)
         if not os.path.isdir(log_dir): os.mkdir(log_dir)
 
-shutil.copyfile(rc.run_conf.genomon_conf_file, rc.run_conf.project_root + '/config/' + genomon_conf_name +'_'+ rc.run_confanalysis_timestamp + genomon_conf_ext)
-shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sample_conf_name +'_'+ rc.run_confanalysis_timestamp + sample_conf_ext)
+shutil.copyfile(rc.run_conf.genomon_conf_file, rc.run_conf.project_root + '/config/' + genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + genomon_conf_ext)
+shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sample_conf_ext)
 
 # prepare output directory for each sample and make mutation control panel file
 for complist in sc.sample_conf.mutation_call:
     # make dir
-    mutation_dir = rc.run_confproject_root + '/mutation/' + complist[0]
+    mutation_dir = rc.run_conf.project_root + '/mutation/' + complist[0]
     if not os.path.isdir(mutation_dir): os.mkdir(mutation_dir)
     # make the control panel text 
     control_panel_name = complist[2]
     if control_panel_name != None:
-        control_panel_file = rc.run_confproject_root + '/mutation/control_panel/' + control_panel_name + ".control_panel.txt"
+        control_panel_file = rc.run_conf.project_root + '/mutation/control_panel/' + control_panel_name + ".control_panel.txt"
         with open(control_panel_file,  "w") as out_handle:
             for panel_sample in sc.sample_conf.control_panel[control_panel_name]:
                 out_handle.write(rc.run_conf.project_root + '/bam/' + panel_sample + '/' + panel_sample + '.markdup.bam' + "\n")
@@ -335,16 +335,16 @@ for complist in sc.sample_conf.sv_detection:
     # make the control yaml file
     control_panel_name = complist[2]
     if control_panel_name != None:
-        control_conf = rc.run_confproject_root + '/sv/control_panel/' + control_panel_name + ".control_info.txt"
+        control_conf = rc.run_conf.project_root + '/sv/control_panel/' + control_panel_name + ".control_info.txt"
         with open(control_conf,  "w") as out_handle:
             for sample in sc.sample_conf.control_panel[control_panel_name]:
-                out_handle.write(sample+ "\t"+ rc.run_confproject_root+ "/sv/"+ sample +"/"+ sample+ "\n")
+                out_handle.write(sample+ "\t"+ rc.run_conf.project_root+ "/sv/"+ sample +"/"+ sample+ "\n")
 
 # link the import bam to project directory
 @ruffus.originate(sc.sample_conf.bam_import.keys())
 def link_import_bam(sample):
     bam = sc.sample_conf.bam_import[sample]
-    link_dir = rc.run_confproject_root + '/bam/' + sample
+    link_dir = rc.run_conf.project_root + '/bam/' + sample
     bam_prefix, ext = os.path.splitext(bam)
     
     if not os.path.isdir(link_dir): os.mkdir(link_dir)
@@ -359,7 +359,7 @@ def link_import_bam(sample):
 @ruffus.originate(bam2fastq_output_list)
 def bam2fastq(outputfiles):
     sample = os.path.basename(os.path.dirname(outputfiles[0][0]))
-    output_dir = rc.run_confproject_root + '/fastq/' + sample
+    output_dir = rc.run_conf.project_root + '/fastq/' + sample
             
     arguments = {"biobambam": gc.genomon_conf.get("SOFTWARE", "biobambam"),
                  "param": gc.genomon_conf.get("bam2fastq", "params"),
@@ -377,7 +377,7 @@ def bam2fastq(outputfiles):
 @ruffus.originate(linked_fastq_list)
 def link_input_fastq(output_file):
     sample = os.path.basename(os.path.dirname(output_file[0][0]))
-    fastq_dir = rc.run_confproject_root + '/fastq/' + sample
+    fastq_dir = rc.run_conf.project_root + '/fastq/' + sample
     fastq_prefix, ext = os.path.splitext(sc.sample_conf.fastq[sample][0][0])
     # Todo
     # 1. should compare the timestamps between input and linked file
@@ -682,7 +682,7 @@ def filt_sv(input_files,  output_file):
 
     dir_name = os.path.dirname(output_file)
     sample_name = os.path.basename(dir_name)
-    #sample_yaml = rc.run_confproject_root + "/sv/config/" + sample_name + ".yaml"
+    #sample_yaml = rc.run_conf.project_root + "/sv/config/" + sample_name + ".yaml"
 
     filt_param = ""
 
@@ -690,10 +690,10 @@ def filt_sv(input_files,  output_file):
         if sample_name == complist[0]:
 
             if complist[1] != None:
-                filt_param = filt_param + " --matched_control_bam " + rc.run_confproject_root + "/bam/" + complist[1] + '/' + complist[1] + ".markdup.bam"
+                filt_param = filt_param + " --matched_control_bam " + rc.run_conf.project_root + "/bam/" + complist[1] + '/' + complist[1] + ".markdup.bam"
 
             if complist[2] != None:
-                filt_param = filt_param + " --non_matched_control_junction " + rc.run_confproject_root +"/sv/non_matched_control_panel/"+ complist[2] +".merged.junction.control.bedpe.gz"
+                filt_param = filt_param + " --non_matched_control_junction " + rc.run_conf.project_root +"/sv/non_matched_control_panel/"+ complist[2] +".merged.junction.control.bedpe.gz"
                 if complist[1] != None:
                     filt_param = filt_param + " --matched_control_label " + complist[1]
 
@@ -702,8 +702,8 @@ def filt_sv(input_files,  output_file):
     filt_param = filt_param.lstrip(' ') + ' ' + gc.genomon_conf.get("sv_filt", "params")
 
     arguments = {"genomon_sv": gc.genomon_conf.get("SOFTWARE", "genomon_sv"),
-                 "input_bam": rc.run_confproject_root + "/bam/" + sample_name + '/' + sample_name + ".markdup.bam",
-                 "output_prefix": rc.run_confproject_root + "/sv/" + sample_name + '/' + sample_name,
+                 "input_bam": rc.run_conf.project_root + "/bam/" + sample_name + '/' + sample_name + ".markdup.bam",
+                 "output_prefix": rc.run_conf.project_root + "/sv/" + sample_name + '/' + sample_name,
                  "reference_genome": gc.genomon_conf.get("REFERENCE", "ref_fasta"),
                  "param": filt_param,
                  "meta_info": gc.get_meta_info(["genomon_sv", "sv_utils"]),
@@ -788,7 +788,7 @@ def merge_qc(input_files, output_file):
                  "coverage_file": input_files[0][1],
                  "output_file": output_file,
                  "meta": gc.get_meta_info(["genomon_pipeline"]),
-                 "fastq_line_num_file": rc.run_confproject_root +'/fastq/'+ sample_name +'/fastq_line_num.txt'}
+                 "fastq_line_num_file": rc.run_conf.project_root +'/fastq/'+ sample_name +'/fastq_line_num.txt'}
     
     r_qc_merge.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name)
 
@@ -806,8 +806,8 @@ def post_analysis_mutation(input_files, output_file):
                  "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
                  "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
                  "mode": "mutation",
-                 "genomon_root": rc.run_confproject_root,
-                 "output_dir": rc.run_confproject_root + "/post_analysis/" + sample_conf_name,
+                 "genomon_root": rc.run_conf.project_root,
+                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
@@ -832,8 +832,8 @@ def post_analysis_sv(input_files, output_file):
                  "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
                  "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
                  "mode": "sv",
-                 "genomon_root": rc.run_confproject_root,
-                 "output_dir": rc.run_confproject_root + "/post_analysis/" + sample_conf_name,
+                 "genomon_root": rc.run_conf.project_root,
+                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
@@ -857,8 +857,8 @@ def post_analysis_qc(input_files, output_file):
                  "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
                  "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
                  "mode": "qc",
-                 "genomon_root": rc.run_confproject_root,
-                 "output_dir": rc.run_confproject_root + "/post_analysis/" + sample_conf_name,
+                 "genomon_root": rc.run_conf.project_root,
+                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
@@ -879,7 +879,7 @@ def post_analysis_qc(input_files, output_file):
 def pre_pmsignature(input_files, output_file):
         
     arguments = {"input_files" : " ".join(input_files),
-                 "output_file" : rc.run_confproject_root + '/pmsignature/' + sample_conf_name + "/mutation.cut.txt"
+                 "output_file" : rc.run_conf.project_root + '/pmsignature/' + sample_conf_name + "/mutation.cut.txt"
                 }
 
     r_pre_pmsignature.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature')
@@ -893,7 +893,7 @@ def pmsignature_ind(input_file, output_file):
     
     command = r_pmsignature_ind.ind_template.format(
                 inputfile =  input_file,
-                outputdir = rc.run_confproject_root + '/pmsignature/' + sample_conf_name,
+                outputdir = rc.run_conf.project_root + '/pmsignature/' + sample_conf_name,
                 trdirflag = gc.genomon_conf.get("pmsignature_ind", "trdirflag").upper(),
                 trialnum = gc.genomon_conf.getint("pmsignature_ind", "trialnum"),
                 bs_genome = gc.genomon_conf.get("pmsignature_ind", "bs_genome"),
@@ -923,7 +923,7 @@ def pmsignature_full(input_file, output_file):
     
     command = r_pmsignature_full.full_template.format(
                 inputfile = input_file,
-                outputdir = rc.run_confproject_root + '/pmsignature/' + sample_conf_name,
+                outputdir = rc.run_conf.project_root + '/pmsignature/' + sample_conf_name,
                 trdirflag = gc.genomon_conf.get("pmsignature_full", "trdirflag").upper(),
                 trialnum = gc.genomon_conf.getint("pmsignature_full", "trialnum"),
                 bgflag = gc.genomon_conf.get("pmsignature_full", "bgflag"),
@@ -961,7 +961,7 @@ def paplot(input_file, output_file):
         command += r_paplot.qc_template.format(
                     paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_qc),
-                    output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                    output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
                     config_file = gc.genomon_conf.get("paplot", "config_file"))
                         
@@ -969,7 +969,7 @@ def paplot(input_file, output_file):
         command += r_paplot.sv_template.format(
                     paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_sv),
-                    output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                    output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
                     config_file = gc.genomon_conf.get("paplot", "config_file"))
                         
@@ -977,7 +977,7 @@ def paplot(input_file, output_file):
         command += r_paplot.mutation_template.format(
                     paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_mutation),
-                    output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                    output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
                     config_file = gc.genomon_conf.get("paplot", "config_file"),
                     annovar = gc.genomon_conf.getboolean("annotation", "active_annovar_flag"))
@@ -987,7 +987,7 @@ def paplot(input_file, output_file):
             command += r_paplot.ind_template.format(
                         paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                         input = paplot_inputs_ind[i],
-                        output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                        output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         title = gc.genomon_conf.get("paplot", "title"),
                         config_file = gc.genomon_conf.get("paplot", "config_file"))
     
@@ -996,7 +996,7 @@ def paplot(input_file, output_file):
             command += r_paplot.full_template.format(
                         paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                         input = paplot_inputs_full[i],
-                        output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                        output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         title = gc.genomon_conf.get("paplot", "title"),
                         config_file = gc.genomon_conf.get("paplot", "config_file"))
     
@@ -1018,7 +1018,7 @@ def paplot(input_file, output_file):
     
     command += r_paplot.index_template.format(
                         paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
-                        output_dir = rc.run_confproject_root + "/paplot/" + sample_conf_name,
+                        output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         remarks = remark,
                         config_file = gc.genomon_conf.get("paplot", "config_file"))
 

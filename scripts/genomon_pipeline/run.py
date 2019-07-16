@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import os
+import ruffus
 import genomon_pipeline.config.genomon_conf as gc
 import genomon_pipeline.config.run_conf as rc
 import genomon_pipeline.config.sample_conf as sc
@@ -34,10 +35,10 @@ def main(args):
 
     if not (args.param_check):
         if rc.run_conf.analysis_type == "dna":
-            import genomon_pipeline.dna_pipeline as pipeline
+            import genomon_pipeline.dna_pipeline
         elif rc.run_conf.analysis_type == "rna":
-            import genomon_pipeline.rna_pipeline as pipeline
-        pipeline.pipeline_run(
+            import genomon_pipeline.rna_pipeline
+        ruffus.pipeline_run(
                      verbose = args.verbose, 
                      multiprocess = args.multiprocess
                     )
