@@ -479,7 +479,7 @@ def markdup(input_files, output_file, output_dir):
 
 
 # identify mutations
-@ruffus.ollows( markdup )
+@ruffus.follows( markdup )
 @ruffus.follows( link_import_bam )
 @ruffus.subdivide(markdup_bam_list, ruffus.formatter(), "{subpath[0][2]}/mutation/{subdir[0][0]}/{subdir[0][0]}.genomon_mutation.result.filt.txt", "{subpath[0][2]}/mutation/{subdir[0][0]}")
 def identify_mutations(input_file, output_file, output_dir):

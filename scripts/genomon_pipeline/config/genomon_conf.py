@@ -195,7 +195,7 @@ def dna_software_version_set():
     pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
     ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
     export_command = "export PYTHONHOME=" +pythonhome+ ";export PATH=$PYTHONHOME/bin:$PATH;export LD_LIBRARY_PATH="+ ld_library_path +";export PYTHONPATH="+ pythonpath +";"
-    for key, name in dna_software_version.iteritems():
+    for key, name in dna_software_version.items():
         command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         version_list = (proc.communicate()[0]).split("\n")
@@ -206,7 +206,7 @@ def rna_software_version_set():
     pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
     ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
     export_command = "export PYTHONHOME=" +pythonhome+ ";export PATH=$PYTHONHOME/bin:$PATH;export LD_LIBRARY_PATH="+ ld_library_path +";export PYTHONPATH="+ pythonpath +";"
-    for key, name in rna_software_version.iteritems():
+    for key, name in rna_software_version.items():
         command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         version_list = (proc.communicate()[0]).split("\n")
