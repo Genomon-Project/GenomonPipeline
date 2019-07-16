@@ -39,9 +39,13 @@ export PYTHONPATH={pythonpath}
     def output_files(self, mode, samples, genomon_root, sample_conf_name, genomon_conf):
         
         import os
-        import ConfigParser
+        import sys
+        if sys.version_info.major == 2:
+            import ConfigParser as cp
+        else:
+            import configparser as cp
         
-        pa_conf = ConfigParser.RawConfigParser()
+        pa_conf = cp.RawConfigParser()
         pa_conf.read(genomon_conf.get("post_analysis", "config_file"))
 
         analysis_dir = genomon_root + "/" + mode

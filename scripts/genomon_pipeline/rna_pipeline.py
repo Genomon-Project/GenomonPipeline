@@ -48,10 +48,10 @@ for sample in sc.sample_conf.bam_tofastq:
 
 sample_list_fastq = sc.sample_conf.fastq
 
-sc.sample_conf_name, ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
+sample_conf_name, ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
 
 # generate input list of 'post analysis for fusionfusion'
-pa_outputs_fusion = r_post_analysis.output_files("fusion", sc.sample_conf.fusion, rc.run_conf.project_root, sc.sample_conf_name, gc.genomon_conf)
+pa_outputs_fusion = r_post_analysis.output_files("fusion", sc.sample_conf.fusion, rc.run_conf.project_root, sample_conf_name, gc.genomon_conf)
 
 pa_inputs_fusion = []
 if pa_outputs_fusion["run_pa"] == True:
@@ -59,7 +59,7 @@ if pa_outputs_fusion["run_pa"] == True:
         pa_inputs_fusion.append(rc.run_conf.project_root + '/fusion/' + complist[0] + '/' + complist[0] + '.genomonFusion.result.filt.txt')
         
 # generate input list of 'post analysis for qc'
-pa_outputs_starqc = r_post_analysis.output_files("starqc", sc.sample_conf.qc, rc.run_conf.project_root, sc.sample_conf_name, gc.genomon_conf)
+pa_outputs_starqc = r_post_analysis.output_files("starqc", sc.sample_conf.qc, rc.run_conf.project_root, sample_conf_name, gc.genomon_conf)
 
 pa_inputs_starqc = []
 if pa_outputs_starqc["run_pa"] == True:
@@ -67,7 +67,7 @@ if pa_outputs_starqc["run_pa"] == True:
         pa_inputs_starqc.append(rc.run_conf.project_root + '/star/' + sample + '/' + sample + '.Log.final.out')
 
 # generate input list of paplot
-paplot_output = rc.run_conf.project_root + '/paplot/' + sc.sample_conf_name + '/index.html'
+paplot_output = rc.run_conf.project_root + '/paplot/' + sample_conf_name + '/index.html'
 
 ## fusionfusion
 paplot_inputs_fusion = []
@@ -108,13 +108,13 @@ if not os.path.isdir(rc.run_conf.project_root + '/intron_retention'): os.mkdir(r
 
 if (gc.genomon_conf.getboolean("post_analysis", "enable") == True):
     if not os.path.exists(rc.run_conf.project_root + '/post_analysis'): os.mkdir(rc.run_conf.project_root + '/post_analysis')
-    if not os.path.exists(rc.run_conf.project_root + '/post_analysis/' + sc.sample_conf_name): os.mkdir(rc.run_conf.project_root + '/post_analysis/' + sc.sample_conf_name)
+    if not os.path.exists(rc.run_conf.project_root + '/post_analysis/' + sample_conf_name): os.mkdir(rc.run_conf.project_root + '/post_analysis/' + sample_conf_name)
     if not os.path.isdir(rc.run_conf.project_root + '/script/post_analysis'): os.mkdir(rc.run_conf.project_root + '/script/post_analysis')
     if not os.path.isdir(rc.run_conf.project_root + '/log/post_analysis'): os.mkdir(rc.run_conf.project_root + '/log/post_analysis')
 
     if (gc.genomon_conf.getboolean("paplot", "enable") == True):
         if not os.path.exists(rc.run_conf.project_root + '/paplot'): os.mkdir(rc.run_conf.project_root + '/paplot')
-        if not os.path.exists(rc.run_conf.project_root + '/paplot/' + sc.sample_conf_name): os.mkdir(rc.run_conf.project_root + '/paplot/' + sc.sample_conf_name)
+        if not os.path.exists(rc.run_conf.project_root + '/paplot/' + sample_conf_name): os.mkdir(rc.run_conf.project_root + '/paplot/' + sample_conf_name)
         if not os.path.isdir(rc.run_conf.project_root + '/script/paplot'): os.mkdir(rc.run_conf.project_root + '/script/paplot')
         if not os.path.isdir(rc.run_conf.project_root + '/log/paplot'): os.mkdir(rc.run_conf.project_root + '/log/paplot')
 
@@ -125,10 +125,10 @@ for target_sample_dict in (sc.sample_conf.bam_import, sc.sample_conf.fastq, sc.s
         if not os.path.isdir(script_dir): os.mkdir(script_dir)
         if not os.path.isdir(log_dir): os.mkdir(log_dir)
 
-gc.genomon_conf_name, gc.genomon_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.gc.genomon_conf_file))
-sc.sample_conf_name, sc.sample_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
-shutil.copyfile(rc.run_conf.gc.genomon_conf_file, rc.run_conf.project_root + '/config/' + gc.genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + gc.genomon_conf_ext)
-shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sc.sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sc.sample_conf_ext)
+genomon_conf_name, genomon_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.gc.genomon_conf_file))
+sample_conf_name, sample_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
+shutil.copyfile(rc.run_conf.gc.genomon_conf_file, rc.run_conf.project_root + '/config/' + genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + genomon_conf_ext)
+shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sample_conf_ext)
 
 expression_bams = []
 # generate input list of genomon expression
@@ -374,7 +374,7 @@ def post_analysis_fusion(input_files, output_file):
                  "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
                  "mode": "fusion",
                  "genomon_root": rc.run_conf.project_root,
-                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sc.sample_conf_name,
+                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
@@ -399,7 +399,7 @@ def post_analysis_starqc(input_files, output_file):
                  "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
                  "mode": "starqc",
                  "genomon_root": rc.run_conf.project_root,
-                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sc.sample_conf_name,
+                 "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
@@ -417,7 +417,7 @@ def post_analysis_starqc(input_files, output_file):
 @ruffus.active_if(len(paplot_inputs) > 0)
 @ruffus.follows(post_analysis_fusion)
 @ruffus.follows(post_analysis_starqc)
-@ruffus.collate(paplot_inputs, ruffus.formatter(), rc.run_conf.project_root + '/paplot/' + sc.sample_conf_name + '/index.html')
+@ruffus.collate(paplot_inputs, ruffus.formatter(), rc.run_conf.project_root + '/paplot/' + sample_conf_name + '/index.html')
 def paplot(input_file, output_file):
     
     # software version in index.html
@@ -443,7 +443,7 @@ def paplot(input_file, output_file):
                  "paplot":  gc.genomon_conf.get("SOFTWARE", "paplot"),
                  "inputs_qc": ",".join(paplot_inputs_starqc),
                  "inputs_sv": ",".join(paplot_inputs_fusion),
-                 "output_dir": rc.run_conf.project_root + "/paplot/" + sc.sample_conf_name,
+                 "output_dir": rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                  "title": gc.genomon_conf.get("paplot", "title"),
                  "remarks": remark,
                  "config_file": gc.genomon_conf.get("paplot", "config_file"),
