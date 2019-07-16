@@ -198,7 +198,7 @@ def dna_software_version_set():
     for key, name in dna_software_version.items():
         command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        version_list = (proc.communicate()[0]).split("\n")
+        version_list = str(proc.communicate()[0]).split("\n")
         software_version[key] = version_list[0]
 
 def rna_software_version_set():
@@ -209,7 +209,7 @@ def rna_software_version_set():
     for key, name in rna_software_version.items():
         command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        version_list = (proc.communicate()[0]).split("\n")
+        version_list = str(proc.communicate()[0]).split("\n")
         software_version[key] = version_list[0]
 
 def get_version(key):
