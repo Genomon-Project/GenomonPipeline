@@ -46,11 +46,7 @@ class Stage_task(object):
             jt.errorPath = ':' + log_dir
             jt.nativeSpecification = self.qsub_option
             jt.remoteCommand = shell_script_full_path
-            if sys.version_info.major == 2:
-                mode = 0750
-            else:
-                mode = 0o750
-            os.chmod(shell_script_full_path, mode)
+            os.chmod(shell_script_full_path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP)
 
             returncode = 0
             returnflag = True

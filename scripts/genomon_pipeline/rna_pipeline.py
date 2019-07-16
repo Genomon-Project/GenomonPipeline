@@ -48,7 +48,7 @@ for sample in sc.sample_conf.bam_tofastq:
 
 sample_list_fastq = sc.sample_conf.fastq
 
-sc.sample_conf_name, ext = os.path.splitext(os.path.basename(rc.run_conf.sc.sample_conf_file))
+sc.sample_conf_name, ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
 
 # generate input list of 'post analysis for fusionfusion'
 pa_outputs_fusion = r_post_analysis.output_files("fusion", sc.sample_conf.fusion, rc.run_conf.project_root, sc.sample_conf_name, gc.genomon_conf)
@@ -126,9 +126,9 @@ for target_sample_dict in (sc.sample_conf.bam_import, sc.sample_conf.fastq, sc.s
         if not os.path.isdir(log_dir): os.mkdir(log_dir)
 
 gc.genomon_conf_name, gc.genomon_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.gc.genomon_conf_file))
-sc.sample_conf_name, sc.sample_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.sc.sample_conf_file))
+sc.sample_conf_name, sc.sample_conf_ext = os.path.splitext(os.path.basename(rc.run_conf.sample_conf_file))
 shutil.copyfile(rc.run_conf.gc.genomon_conf_file, rc.run_conf.project_root + '/config/' + gc.genomon_conf_name +'_'+ rc.run_conf.analysis_timestamp + gc.genomon_conf_ext)
-shutil.copyfile(rc.run_conf.sc.sample_conf_file, rc.run_conf.project_root + '/config/' + sc.sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sc.sample_conf_ext)
+shutil.copyfile(rc.run_conf.sample_conf_file, rc.run_conf.project_root + '/config/' + sc.sample_conf_name +'_'+ rc.run_conf.analysis_timestamp + sc.sample_conf_ext)
 
 expression_bams = []
 # generate input list of genomon expression
@@ -375,7 +375,7 @@ def post_analysis_fusion(input_files, output_file):
                  "mode": "fusion",
                  "genomon_root": rc.run_conf.project_root,
                  "output_dir": rc.run_conf.project_root + "/post_analysis/" + sc.sample_conf_name,
-                 "sample_sheet": os.path.abspath(rc.run_conf.sc.sample_conf_file),
+                 "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
                  "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
@@ -400,7 +400,7 @@ def post_analysis_starqc(input_files, output_file):
                  "mode": "starqc",
                  "genomon_root": rc.run_conf.project_root,
                  "output_dir": rc.run_conf.project_root + "/post_analysis/" + sc.sample_conf_name,
-                 "sample_sheet": os.path.abspath(rc.run_conf.sc.sample_conf_file),
+                 "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
                  "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
                  "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
