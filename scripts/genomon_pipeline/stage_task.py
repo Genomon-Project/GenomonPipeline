@@ -32,7 +32,6 @@ class Stage_task(object):
 
     def task_exec(self, arguments, log_dir, script_dir, singularity_options, max_task=0):
         # Make shell script
-
         now = datetime.datetime.now()
         shell_script_name = file_timestamp_format.format(
                                  name=self.task_name,
@@ -117,7 +116,7 @@ class Stage_task(object):
                             returncode = retval.exitStatus
                             returnflag = retval.hasExited
                             if var == self.retry_count: break
-                            jobId_list = ((retval.jobId).encode('utf-8')).split(".")
+                            jobId_list = retval.jobId.split(".")
                             taskId = int(jobId_list[1])
                             all_jobids.extend(s.runBulkJobs(jt,taskId,taskId,1))
                        

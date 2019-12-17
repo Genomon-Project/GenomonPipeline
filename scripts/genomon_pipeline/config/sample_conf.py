@@ -7,7 +7,9 @@ class Sample_conf(object):
     def __init__(self):
 
         self.fastq = {}
+        self.fastq_src = {}
         self.bam_tofastq = {}
+        self.bam_tofastq_src = {}
         self.bam_import = {}
         self.bam_import_src = {}
         self.mutation_call = []
@@ -101,7 +103,7 @@ class Sample_conf(object):
 
         return _file_data
 
-    def __link_sources(file_path):
+    def _link_sources(self, file_path):
         links = []
         link_dst = os.path.abspath(file_path)
         while(1):
@@ -194,7 +196,8 @@ class Sample_conf(object):
 
                 sequence1 = row[1].split(';')
                 sequence2 = row[2].split(';')
-
+                
+                self.fastq_src[sampleID] = []
                 for s in range(len(sequence1)):
                     if not os.path.exists(sequence1[s]):
                         err_msg = sampleID + ": " + sequence1[s] +  " does not exists" 
@@ -205,6 +208,12 @@ class Sample_conf(object):
                     if sequence1[s] == sequence2[s]:
                         err_msg = sampleID + ": read1 and read2 are same path" 
                         raise ValueError(err_msg)
+                    
+                    self.fastq_src[sampleID].append(sequence1[s])
+                    self.fastq_src[sampleID].append(sequence2[s])
+                    self.fastq_src[sampleID].extend(self._link_sources(sequence1[s]))
+                    self.fastq_src[sampleID].extend(self._link_sources(sequence2[s]))
+
                 self.fastq[sampleID] = [sequence1, sequence2]
 
             elif mode == 'bam_tofastq':
@@ -225,11 +234,14 @@ class Sample_conf(object):
                     err_msg = sampleID + ": only one bam file is allowed"
                     raise ValueError(err_msg)
 
+                self.bam_tofastq_src[sampleID] = []
                 sequences = row[1]
                 for seq in sequences.split(";"):
                     if not os.path.exists(seq):
                         err_msg = sampleID + ": " + seq +  " does not exists"
                         raise ValueError(err_msg)
+                    self.bam_tofastq_src[sampleID].append(seq)
+                    self.bam_tofastq_src[sampleID].extend(self._link_sources(seq))
 
                 self.bam_tofastq[sampleID] = sequences
                 
@@ -267,8 +279,8 @@ class Sample_conf(object):
                     raise ValueError(err_msg)
 
                 self.bam_import_src[sampleID] = [sequence, sequence_index]
-                self.bam_import_src[sampleID].extend(__link_sources(sequence))
-                self.bam_import_src[sampleID].extend(__link_sources(sequence_index))
+                self.bam_import_src[sampleID].extend(self._link_sources(sequence))
+                self.bam_import_src[sampleID].extend(self._link_sources(sequence_index))
                 
                 self.bam_import[sampleID] = sequence
 

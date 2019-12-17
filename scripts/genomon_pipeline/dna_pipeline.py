@@ -341,6 +341,7 @@ for complist in sc.sample_conf.sv_detection:
                 out_handle.write(sample+ "\t"+ rc.run_conf.project_root+ "/sv/"+ sample +"/"+ sample+ "\n")
 
 # link the import bam to project directory
+@ruffus.active_if(len(sc.sample_conf.bam_import.keys()) > 0)
 @ruffus.originate(sc.sample_conf.bam_import.keys())
 def link_import_bam(sample):
     bam = sc.sample_conf.bam_import[sample]
@@ -371,8 +372,8 @@ def bam2fastq(outputfiles):
                  "s": output_dir + '/single_end_output.txt'}
     
     bind = [rc.run_conf.project_root]
-    if sample_name in sc.sample_conf.bam_import_src:
-        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    if sample_name in sc.sample_conf.bam_tofastq_src:
+        bind.extend(sc.sample_conf.bam_tofastq_src[sample_name])
         
     singularity_params = {
         "image": gc.genomon_conf.get("bam2fastq", "image"),
@@ -413,11 +414,15 @@ def split_files(input_files, output_files, target_dir):
                  "fastq_filter": gc.genomon_conf.get("split_fastq", "fastq_filter"),
                  "target_dir": target_dir,
                  "ext": ext}
-    
+
+    bind = [rc.run_conf.project_root]
+    if sample_name in sc.sample_conf.fastq_src:
+        bind.extend(sc.sample_conf.fastq_src[sample_name])
+
     singularity_params = {
         "image": gc.genomon_conf.get("split_fastq", "image"),
         "option": gc.genomon_conf.get("split_fastq", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": bind,
     }
     fastq_splitter.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/'+ sample_name, singularity_params, 2)
    
@@ -447,10 +452,11 @@ def map_dna_sequence(input_files, output_files, input_dir, output_dir):
         all_line_num = int(tmp_num)
     split_lines = gc.genomon_conf.get("split_fastq", "split_fastq_line_number")
 
-    ans_quotient = all_line_num / int(split_lines)
+    import math
+    ans_quotient = int(math.floor(all_line_num / int(split_lines)))
     ans_remainder = all_line_num % int(split_lines)
     max_task_id = ans_quotient if ans_remainder == 0 else ans_quotient + 1
-    
+
     arguments = {
         "input_dir": input_dir,
         "output_dir": output_dir,
@@ -848,7 +854,7 @@ def post_analysis_mutation(input_files, output_file):
                  "input_file_case4": ",".join(pa_outputs_mutation["case4"]["samples"]),
                 }
      
-     singularity_params = {
+    singularity_params = {
         "image": gc.genomon_conf.get("post_analysis", "image"),
         "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
         "bind": [

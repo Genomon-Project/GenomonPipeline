@@ -61,7 +61,8 @@ def dna_genomon_conf_check():
         value = genomon_conf.get(section, key)
         if not os.path.exists(value):
             raise ValueError(err_msg % (value, key, section))
-
+    
+    """
     section = "SOFTWARE"
     for key in dna_software_list:
         
@@ -77,7 +78,7 @@ def dna_genomon_conf_check():
         value = genomon_conf.get(section, key)
         if not os.path.exists(value):
             raise ValueError(err_msg % (value, key, section))
-
+    """
     pass
 
 def rna_genomon_conf_check():
@@ -90,17 +91,19 @@ def rna_genomon_conf_check():
         value = genomon_conf.get(section, key)
         if not os.path.exists(value):
             raise ValueError(err_msg % (value, key, section))
-
+    """
     section = "SOFTWARE"
     for key in rna_software_list:
         value = genomon_conf.get(section, key)
         if not os.path.exists(value):
             raise ValueError(err_msg % (value, key, section))
-
+    """
     pass
 
 
 def dna_software_version_set():
+    pass
+    """
     pythonhome = genomon_conf.get("ENV", "PYTHONHOME")
     pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
     ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
@@ -110,8 +113,10 @@ def dna_software_version_set():
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         version_list = str(proc.communicate()[0]).split("\n")
         software_version[key] = version_list[0]
-
+    """
 def rna_software_version_set():
+    pass
+    """
     pythonhome = genomon_conf.get("ENV", "PYTHONHOME")
     pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
     ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
@@ -121,7 +126,7 @@ def rna_software_version_set():
         proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         version_list = str(proc.communicate()[0]).split("\n")
         software_version[key] = version_list[0]
-
+    """
 def get_version(key):
     return software_version[key]
 

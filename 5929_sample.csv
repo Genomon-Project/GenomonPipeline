@@ -1,0 +1,12 @@
+[fastq]
+5929_tumor,/share/pub/genomon/samples/test5929/5929_tumor/sequence1.fastq,/share/pub/genomon/samples/test5929/5929_tumor/sequence2.fastq
+
+[mutation_call]
+
+[sv_detection]
+
+[qc]
+5929_tumor
+
+[controlpanel]
+
