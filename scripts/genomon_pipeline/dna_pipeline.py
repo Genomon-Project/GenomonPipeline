@@ -361,8 +361,7 @@ def bam2fastq(outputfiles):
     sample = os.path.basename(os.path.dirname(outputfiles[0][0]))
     output_dir = rc.run_conf.project_root + '/fastq/' + sample
             
-    arguments = {"biobambam": gc.genomon_conf.get("SOFTWARE", "biobambam"),
-                 "param": gc.genomon_conf.get("bam2fastq", "params"),
+    arguments = {"param": gc.genomon_conf.get("bam2fastq", "params"),
                  "input_bam": sc.sample_conf.bam_tofastq[sample],
                  "f1_name": outputfiles[0][0],
                  "f2_name": outputfiles[1][0],
@@ -370,7 +369,17 @@ def bam2fastq(outputfiles):
                  "o2_name": output_dir + '/unmatched_second_output.txt',
                  "t": output_dir + '/temp.txt',
                  "s": output_dir + '/single_end_output.txt'}
-    bamtofastq.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample, rc.run_conf.project_root + '/script/'+ sample)
+    
+    bind = [rc.run_conf.project_root]
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+        
+    singularity_params = {
+        "image": gc.genomon_conf.get("bam2fastq", "image"),
+        "option": gc.genomon_conf.get("bam2fastq", "singularity_option"),
+        "bind": bind,
+    }
+    bamtofastq.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample, rc.run_conf.project_root + '/script/'+ sample, singularity_params)
 
 
 # link the input fastq to project directory
@@ -452,7 +461,7 @@ def map_dna_sequence(input_files, output_files, input_dir, output_dir):
     singularity_params = {
         "image": gc.genomon_conf.get("bwa_mem", "image"),
         "option": gc.genomon_conf.get("bwa_mem", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": [rc.run_conf.project_root, os.path.dirname(gc.genomon_conf.get("REFERENCE", "ref_fasta"))],
     }
     
     bwa_align.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name, singularity_params, max_task_id) 
@@ -783,7 +792,12 @@ def coverage(input_file, output_file):
                  "input_file": input_file,
                  "output_file": output_file}
 
-    bind = [rc.run_conf.project_root]
+    bind = [
+        rc.run_conf.project_root,
+        gc.genomon_conf.get("REFERENCE", "genome_size"),
+        gc.genomon_conf.get("REFERENCE", "gaptxt"),
+        gc.genomon_conf.get("REFERENCE", "bait_file")
+    ]
     if sample_name in sc.sample_conf.bam_import_src:
         bind.extend(sc.sample_conf.bam_import_src[sample_name])
     singularity_params = {
@@ -837,7 +851,10 @@ def post_analysis_mutation(input_files, output_file):
      singularity_params = {
         "image": gc.genomon_conf.get("post_analysis", "image"),
         "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": [
+            rc.run_conf.project_root,
+            gc.genomon_conf.get("post_analysis", "config_file"),
+        ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
     
@@ -862,7 +879,10 @@ def post_analysis_sv(input_files, output_file):
     singularity_params = {
         "image": gc.genomon_conf.get("post_analysis", "image"),
         "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": [
+            rc.run_conf.project_root,
+            gc.genomon_conf.get("post_analysis", "config_file"),
+        ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
 
@@ -886,7 +906,10 @@ def post_analysis_qc(input_files, output_file):
     singularity_params = {
         "image": gc.genomon_conf.get("post_analysis", "image"),
         "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": [
+            rc.run_conf.project_root,
+            gc.genomon_conf.get("post_analysis", "config_file"),
+        ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
     
@@ -1048,7 +1071,10 @@ def paplot(input_file, output_file):
     singularity_params = {
         "image": gc.genomon_conf.get("paplot", "image"),
         "option": gc.genomon_conf.get("paplot", "singularity_option"),
-        "bind": [rc.run_conf.project_root],
+        "bind": [
+            rc.run_conf.project_root,
+            gc.genomon_conf.get("paplot", "config_file")
+        ]
     }
     r_paplot.task_exec(arguments, rc.run_conf.project_root + '/log/paplot', rc.run_conf.project_root + '/script/paplot', singularity_params)
 

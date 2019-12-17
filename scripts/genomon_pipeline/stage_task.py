@@ -53,7 +53,7 @@ class Stage_task(object):
         singularity_script_file = open(singularity_script_full_path, 'w')
         singularity_script_file.write(run_singularity_template.format(
             option = singularity_options["option"],
-            bind = ",".join(singularity_options["bind"],
+            bind = ",".join(singularity_options["bind"]),
             image = singularity_options["image"],
             script = shell_script_full_path
         ))
