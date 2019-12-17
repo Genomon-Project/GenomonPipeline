@@ -19,7 +19,7 @@ date                    # print date
 set -xv
 set -o pipefail
 
-{biobambam}/bammarkduplicates M={out_prefix}.metrics tmpfile={out_prefix}.tmp markthreads=2 rewritebam=1 rewritebamlevel=1 index=1 md5=1 {input_bam_files} O={out_bam}
+/usr/local/bin/bammarkduplicates M={out_prefix}.metrics tmpfile={out_prefix}.tmp markthreads=2 rewritebam=1 rewritebamlevel=1 index=1 md5=1 {input_bam_files} O={out_bam}
 
 
 """

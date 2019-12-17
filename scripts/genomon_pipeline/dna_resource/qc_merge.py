@@ -20,10 +20,6 @@ set -xv
 set -eu
 
 # set python environment
-export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
-export PYTHONPATH={pythonpath}
-
 if [ -f {fastq_line_num_file} ]; then
 
     total_reads=`awk 'NR==2 {{print $15}}' {bamstats_file}`
@@ -36,7 +32,7 @@ if [ -f {fastq_line_num_file} ]; then
     fi
 fi
 
-{genomon_qc} merge {coverage_file} {bamstats_file} {output_file} --meta "{meta}"
+genomon_qc merge {coverage_file} {bamstats_file} {output_file} --meta "{meta}"
 """
 
     def __init__(self, qsub_option, script_dir):

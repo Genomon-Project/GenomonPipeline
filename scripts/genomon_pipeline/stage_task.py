@@ -7,6 +7,21 @@ import stat
 
 file_timestamp_format = "{name}_{year:0>4d}{month:0>2d}{day:0>2d}_{hour:0>2d}{min:0>2d}{second:0>2d}_{msecond:0>6d}"
 
+run_singularity_template = """#!/bin/bash
+#
+# Set SGE
+#
+#$ -S /bin/bash         # set shell in UGE
+#$ -cwd                 # execute at the submitted dir
+pwd                     # print current working directory
+hostname                # print hostname
+date                    # print date
+set -xv
+set -o pipefail
+
+singularity exec {option} --bind {bind} {image} /bin/bash {script}
+"""
+
 class Stage_task(object):
 
     def __init__(self, qsub_option, use_drmaa_flag):
@@ -15,7 +30,7 @@ class Stage_task(object):
         self.retry_count = 2
 
 
-    def task_exec(self, arguments, log_dir, script_dir, max_task=0):
+    def task_exec(self, arguments, log_dir, script_dir, singularity_options, max_task=0):
         # Make shell script
 
         now = datetime.datetime.now()
@@ -34,6 +49,16 @@ class Stage_task(object):
         shell_script_file.write(self.script_template.format(**arguments))
         shell_script_file.close()
 
+        singularity_script_full_path = "{script}/singularity_{file}.sh".format(script = script_dir, file = shell_script_name)
+        singularity_script_file = open(singularity_script_full_path, 'w')
+        singularity_script_file.write(run_singularity_template.format(
+            option = singularity_options["option"],
+            bind = ",".join(singularity_options["bind"],
+            image = singularity_options["image"],
+            script = shell_script_full_path
+        ))
+        singularity_script_file.close()
+        
         if self.drmaa:
             import drmaa
         
@@ -45,8 +70,8 @@ class Stage_task(object):
             jt.outputPath = ':' + log_dir
             jt.errorPath = ':' + log_dir
             jt.nativeSpecification = self.qsub_option
-            jt.remoteCommand = shell_script_full_path
-            os.chmod(shell_script_full_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
+            jt.remoteCommand = singularity_script_full_path
+            os.chmod(singularity_script_full_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
 
             returncode = 0
             returnflag = True
@@ -109,7 +134,7 @@ class Stage_task(object):
                 qsub_commands.extend(['-t', '1-'+str(max_task)+':1'])
 
             qsub_options = self.qsub_option.split(' ')
-            returncode = subprocess.call(qsub_commands + qsub_options + [shell_script_full_path])
+            returncode = subprocess.call(qsub_commands + qsub_options + [singularity_script_full_path])
 
             if returncode != 0: 
                 raise RuntimeError("The batch job failed.")

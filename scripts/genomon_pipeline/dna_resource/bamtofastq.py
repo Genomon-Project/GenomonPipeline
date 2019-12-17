@@ -36,7 +36,7 @@ else
 
     for bam in ${{bams[@]}}; do
         echo $bam
-        {biobambam}/bamtofastq {param} filename=${{bam}} F={f1_name}.tmp F2={f2_name}.tmp T={t}.tmp S={s}.tmp O={o1_name}.tmp O2={o2_name}.tmp || exit $?
+        /usr/local/bin/bamtofastq {param} filename=${{bam}} F={f1_name}.tmp F2={f2_name}.tmp T={t}.tmp S={s}.tmp O={o1_name}.tmp O2={o2_name}.tmp || exit $?
         cat {f1_name}.tmp >> {f1_name} || exit $?
         cat {f2_name}.tmp >> {f2_name} || exit $?
         if [ -s {t}.tmp ]; then

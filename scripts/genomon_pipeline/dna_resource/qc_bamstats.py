@@ -20,12 +20,11 @@ set -xv
 set -o pipefail
 
 # set python environment
-export PYTHONHOME={pythonhome}
-export PYTHONPATH={pythonpath}
-export PATH=$PYTHONHOME/bin:{perl}:$PATH
-export PERL5LIB={perl5lib}
+export bamstats=/tools/ICGC/bin/bam_stats.pl
+export ld_library_path=/usr/local/bin
+export perl5lib=/tools/ICGC/lib/perl5:/tools/ICGC/lib/perl5/x86_64-linux-gnu-thread-multi
 
-{genomon_qc} bamstats {input_file} {output_file} --bamstats {bamstats}
+genomon_qc bamstats {input_file} {output_file} --bamstats {bamstats}
 """
 
     def __init__(self, qsub_option, script_dir):

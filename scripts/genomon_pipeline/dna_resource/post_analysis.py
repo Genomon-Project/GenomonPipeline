@@ -18,12 +18,7 @@ hostname                # print hostname
 date                    # print date
 set -xv
 
-# set python environment
-export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
-export PYTHONPATH={pythonpath}
-
-{genomon_pa} {mode} {output_dir} {genomon_root} {sample_sheet} \
+genomon_pa {mode} {output_dir} {genomon_root} {sample_sheet} \
 --config_file {config_file} \
 --samtools {samtools} --bedtools {bedtools} \
 --input_file_case1 "{input_file_case1}" \

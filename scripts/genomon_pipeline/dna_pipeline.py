@@ -405,7 +405,12 @@ def split_files(input_files, output_files, target_dir):
                  "target_dir": target_dir,
                  "ext": ext}
     
-    fastq_splitter.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/'+ sample_name, 2)
+    singularity_params = {
+        "image": gc.genomon_conf.get("split_fastq", "image"),
+        "option": gc.genomon_conf.get("split_fastq", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    fastq_splitter.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/'+ sample_name, singularity_params, 2)
    
     file_list = glob.glob(target_dir + '/1_*.fastq_split')
     file_list.sort()
@@ -437,15 +442,20 @@ def map_dna_sequence(input_files, output_files, input_dir, output_dir):
     ans_remainder = all_line_num % int(split_lines)
     max_task_id = ans_quotient if ans_remainder == 0 else ans_quotient + 1
     
-    arguments = {"input_dir": input_dir,
-                 "output_dir": output_dir,
-                 "sample_name": sample_name,
-                 "bwa": gc.genomon_conf.get("SOFTWARE", "bwa"),
-                 "bwa_params": gc.genomon_conf.get("bwa_mem", "bwa_params"),
-                 "ref_fa": gc.genomon_conf.get("REFERENCE", "ref_fasta"),
-                 "biobambam": gc.genomon_conf.get("SOFTWARE", "biobambam")}
-
-    bwa_align.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name, max_task_id) 
+    arguments = {
+        "input_dir": input_dir,
+        "output_dir": output_dir,
+        "sample_name": sample_name,
+        "bwa_params": gc.genomon_conf.get("bwa_mem", "bwa_params"),
+        "ref_fa": gc.genomon_conf.get("REFERENCE", "ref_fasta"),
+    }
+    singularity_params = {
+        "image": gc.genomon_conf.get("bwa_mem", "image"),
+        "option": gc.genomon_conf.get("bwa_mem", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    
+    bwa_align.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name, singularity_params, max_task_id) 
 
     for task_id in range(max_task_id):
         num = str(task_id).zfill(4)
@@ -466,12 +476,17 @@ def markdup(input_files, output_file, output_dir):
     for input_file in input_files:
         input_bam_files = input_bam_files + " I=" + input_file
 
-    arguments = {"biobambam": gc.genomon_conf.get("SOFTWARE", "biobambam"),
-                 "out_prefix": output_prefix,
+    arguments = {"out_prefix": output_prefix,
                  "input_bam_files": input_bam_files,
                  "out_bam": output_file}
-
-    markduplicates.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/'+ sample_name)
+    
+    singularity_params = {
+        "image": gc.genomon_conf.get("markduplicates", "image"),
+        "option": gc.genomon_conf.get("markduplicates", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+        
+    markduplicates.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/'+ sample_name, singularity_params)
 
     for input_file in input_files:
         os.unlink(input_file)
@@ -728,16 +743,19 @@ def bam_stats(input_file, output_file):
     dir_name = os.path.dirname(output_file)
     sample_name = os.path.basename(dir_name)
     
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_qc": gc.genomon_conf.get("SOFTWARE", "genomon_qc"),
-                 "bamstats": gc.genomon_conf.get("SOFTWARE", "bamstats"),
-                 "perl": gc.genomon_conf.get("ENV", "PERL"),
-                 "perl5lib": gc.genomon_conf.get("ENV", "PERL5LIB"),
-                 "input_file": input_file,
+    arguments = {"input_file": input_file,
                  "output_file": output_file}
     
-    r_qc_bamstats.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name)
+    bind = [rc.run_conf.project_root]
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    
+    singularity_params = {
+        "image": gc.genomon_conf.get("qc_bamstats", "image"),
+        "option": gc.genomon_conf.get("qc_bamstats", "singularity_option"),
+        "bind": bind,
+    }
+    r_qc_bamstats.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
 
 @ruffus.follows( link_import_bam )
@@ -754,9 +772,6 @@ def coverage(input_file, output_file):
         data_type = "wgs"
 
     arguments = {"data_type": data_type,
-                 "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_qc": gc.genomon_conf.get("SOFTWARE", "genomon_qc"),
                  "coverage_text": gc.genomon_conf.get("qc_coverage", "coverage"),
                  "i_bed_lines": gc.genomon_conf.get("qc_coverage", "wgs_i_bed_lines"),
                  "i_bed_width": gc.genomon_conf.get("qc_coverage", "wgs_i_bed_width"),
@@ -765,13 +780,18 @@ def coverage(input_file, output_file):
                  "gaptxt": gc.genomon_conf.get("REFERENCE", "gaptxt"),
                  "bait_file": gc.genomon_conf.get("REFERENCE", "bait_file"),
                  "samtools_params": gc.genomon_conf.get("qc_coverage", "samtools_params"),
-                 "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
-                 "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
                  "input_file": input_file,
                  "output_file": output_file}
 
-    r_qc_coverage.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name)
+    bind = [rc.run_conf.project_root]
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    singularity_params = {
+        "image": gc.genomon_conf.get("qc_coverage", "image"),
+        "option": gc.genomon_conf.get("qc_coverage", "singularity_option"),
+        "bind": bind,
+    }
+    r_qc_coverage.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
 @ruffus.follows( bam_stats )
 @ruffus.follows( coverage )
@@ -781,16 +801,18 @@ def merge_qc(input_files, output_file):
     dir_name = os.path.dirname(output_file)
     sample_name = os.path.basename(dir_name)
     
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_qc": gc.genomon_conf.get("SOFTWARE", "genomon_qc"),
-                 "bamstats_file": input_files[0][0],
+    arguments = {"bamstats_file": input_files[0][0],
                  "coverage_file": input_files[0][1],
                  "output_file": output_file,
                  "meta": gc.get_meta_info(["genomon_pipeline"]),
                  "fastq_line_num_file": rc.run_conf.project_root +'/fastq/'+ sample_name +'/fastq_line_num.txt'}
-    
-    r_qc_merge.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name)
+
+    singularity_params = {
+        "image": gc.genomon_conf.get("qc_merge", "image"),
+        "option": gc.genomon_conf.get("qc_merge", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_qc_merge.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
 #####################
 # post analysis stage
@@ -801,24 +823,23 @@ def merge_qc(input_files, output_file):
 @ruffus.collate(pa_inputs_mutation, ruffus.formatter(), pa_outputs_mutation["outputs"])
 def post_analysis_mutation(input_files, output_file):
         
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
-                 "mode": "mutation",
+    arguments = {"mode": "mutation",
                  "genomon_root": rc.run_conf.project_root,
                  "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
-                 "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
-                 "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
                  "input_file_case1": ",".join(pa_outputs_mutation["case1"]["samples"]),
                  "input_file_case2": ",".join(pa_outputs_mutation["case2"]["samples"]),
                  "input_file_case3": ",".join(pa_outputs_mutation["case3"]["samples"]),
                  "input_file_case4": ",".join(pa_outputs_mutation["case4"]["samples"]),
                 }
-
-    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis')
+     
+     singularity_params = {
+        "image": gc.genomon_conf.get("post_analysis", "image"),
+        "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
     
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(len(pa_inputs_sv) > 0)
@@ -827,24 +848,23 @@ def post_analysis_mutation(input_files, output_file):
 @ruffus.collate(pa_inputs_sv, ruffus.formatter(), pa_outputs_sv["outputs"])
 def post_analysis_sv(input_files, output_file):
 
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
-                 "mode": "sv",
+    arguments = {"mode": "sv",
                  "genomon_root": rc.run_conf.project_root,
                  "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
-                 "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
-                 "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
                  "input_file_case1": ",".join(pa_outputs_sv["case1"]["samples"]),
                  "input_file_case2": ",".join(pa_outputs_sv["case2"]["samples"]),
                  "input_file_case3": ",".join(pa_outputs_sv["case3"]["samples"]),
                  "input_file_case4": ",".join(pa_outputs_sv["case4"]["samples"]),
                 }
-                 
-    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis')
+    
+    singularity_params = {
+        "image": gc.genomon_conf.get("post_analysis", "image"),
+        "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
 
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(len(pa_inputs_qc) > 0)
@@ -852,24 +872,23 @@ def post_analysis_sv(input_files, output_file):
 @ruffus.collate(pa_inputs_qc, ruffus.formatter(), pa_outputs_qc["outputs"])
 def post_analysis_qc(input_files, output_file):
 
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "genomon_pa":  gc.genomon_conf.get("SOFTWARE", "genomon_pa"),
-                 "mode": "qc",
+    arguments = {"mode": "qc",
                  "genomon_root": rc.run_conf.project_root,
                  "output_dir": rc.run_conf.project_root + "/post_analysis/" + sample_conf_name,
                  "sample_sheet": os.path.abspath(rc.run_conf.sample_conf_file),
                  "config_file": gc.genomon_conf.get("post_analysis", "config_file"),
-                 "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
-                 "bedtools": gc.genomon_conf.get("SOFTWARE", "bedtools"),
                  "input_file_case1": ",".join(sc.sample_conf.qc),
                  "input_file_case2": "",
                  "input_file_case3": "",
                  "input_file_case4": "",
                 }
-                 
-    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis')
+                
+    singularity_params = {
+        "image": gc.genomon_conf.get("post_analysis", "image"),
+        "option": gc.genomon_conf.get("post_analysis", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
     
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(gc.genomon_conf.getboolean("pmsignature_ind", "enable") or gc.genomon_conf.getboolean("pmsignature_full", "enable"))
@@ -881,8 +900,13 @@ def pre_pmsignature(input_files, output_file):
     arguments = {"input_files" : " ".join(input_files),
                  "output_file" : rc.run_conf.project_root + '/pmsignature/' + sample_conf_name + "/mutation.cut.txt"
                 }
-
-    r_pre_pmsignature.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature')
+                
+    singularity_params = {
+        "image": gc.genomon_conf.get("pmsignature", "image"),
+        "option": gc.genomon_conf.get("pmsignature", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_pre_pmsignature.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', singularity_params)
     
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(gc.genomon_conf.getboolean("pmsignature_ind", "enable"))
@@ -898,21 +922,22 @@ def pmsignature_ind(input_file, output_file):
                 trialnum = gc.genomon_conf.getint("pmsignature_ind", "trialnum"),
                 bs_genome = gc.genomon_conf.get("pmsignature_ind", "bs_genome"),
                 bgflag = gc.genomon_conf.get("pmsignature_ind", "bgflag"),
-                txdb_transcript = gc.genomon_conf.get("pmsignature_ind", "txdb_transcript"),
-                script_path = gc.genomon_conf.get("SOFTWARE", "r_scripts"))
+                txdb_transcript = gc.genomon_conf.get("pmsignature_ind", "txdb_transcript"))
     
     sig_nums = range(gc.genomon_conf.getint("pmsignature_ind", "signum_min"), gc.genomon_conf.getint("pmsignature_ind", "signum_max") + 1)
     sig_num_text = ""
     for i in sig_nums: sig_num_text += "%d " % i
 
-    arguments = {"r_path": gc.genomon_conf.get("ENV", "R_PATH"),
-                 "r_ld_library_path": gc.genomon_conf.get("ENV", "R_LD_LIBRARY_PATH"),
-                 "r_libs": gc.genomon_conf.get("ENV", "R_LIBS"),
-                 "command": command,
+    arguments = {"command": command,
                  "sig_list": sig_num_text
                 }
     max_task_id = len(sig_nums)
-    r_pmsignature_ind.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', max_task_id)
+    singularity_params = {
+        "image": gc.genomon_conf.get("pmsignature_ind", "image"),
+        "option": gc.genomon_conf.get("pmsignature_ind", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_pmsignature_ind.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', singularity_params, max_task_id)
 
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(gc.genomon_conf.getboolean("pmsignature_full", "enable"))
@@ -928,21 +953,22 @@ def pmsignature_full(input_file, output_file):
                 trialnum = gc.genomon_conf.getint("pmsignature_full", "trialnum"),
                 bgflag = gc.genomon_conf.get("pmsignature_full", "bgflag"),
                 bs_genome = gc.genomon_conf.get("pmsignature_full", "bs_genome"),
-                txdb_transcript = gc.genomon_conf.get("pmsignature_full", "txdb_transcript"),
-                script_path = gc.genomon_conf.get("SOFTWARE", "r_scripts"))
+                txdb_transcript = gc.genomon_conf.get("pmsignature_full", "txdb_transcript"))
     
     sig_nums = range(gc.genomon_conf.getint("pmsignature_full", "signum_min"), gc.genomon_conf.getint("pmsignature_full", "signum_max") + 1)
     sig_num_text = ""
     for i in sig_nums: sig_num_text += "%d " % i
 
-    arguments = {"r_path": gc.genomon_conf.get("ENV", "R_PATH"),
-                 "r_ld_library_path": gc.genomon_conf.get("ENV", "R_LD_LIBRARY_PATH"),
-                 "r_libs": gc.genomon_conf.get("ENV", "R_LIBS"),
-                 "command": command,
+    arguments = {"command": command,
                  "sig_list": sig_num_text
                 }
     max_task_id = len(sig_nums)
-    r_pmsignature_full.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', max_task_id)
+    singularity_params = {
+        "image": gc.genomon_conf.get("pmsignature_full", "image"),
+        "option": gc.genomon_conf.get("pmsignature_full", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_pmsignature_full.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', singularity_params, max_task_id)
 
 @ruffus.active_if(gc.genomon_conf.getboolean("post_analysis", "enable"))
 @ruffus.active_if(gc.genomon_conf.getboolean("paplot", "enable"))
@@ -959,7 +985,6 @@ def paplot(input_file, output_file):
     command = ""
     if len(paplot_inputs_qc) > 0:
         command += r_paplot.qc_template.format(
-                    paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_qc),
                     output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
@@ -967,7 +992,6 @@ def paplot(input_file, output_file):
                         
     if len(paplot_inputs_sv) > 0:
         command += r_paplot.sv_template.format(
-                    paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_sv),
                     output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
@@ -975,7 +999,6 @@ def paplot(input_file, output_file):
                         
     if len(paplot_inputs_mutation) > 0:
         command += r_paplot.mutation_template.format(
-                    paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                     inputs = ",".join(paplot_inputs_mutation),
                     output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                     title = gc.genomon_conf.get("paplot", "title"),
@@ -985,7 +1008,6 @@ def paplot(input_file, output_file):
     if gc.genomon_conf.getboolean("pmsignature_ind", "enable"):
         for i in range(len(paplot_inputs_ind)):
             command += r_paplot.ind_template.format(
-                        paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                         input = paplot_inputs_ind[i],
                         output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         title = gc.genomon_conf.get("paplot", "title"),
@@ -994,7 +1016,6 @@ def paplot(input_file, output_file):
     if gc.genomon_conf.getboolean("pmsignature_full", "enable"):
         for i in range(len(paplot_inputs_full)):
             command += r_paplot.full_template.format(
-                        paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                         input = paplot_inputs_full[i],
                         output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         title = gc.genomon_conf.get("paplot", "title"),
@@ -1017,17 +1038,17 @@ def paplot(input_file, output_file):
     remark += "</ul>"
     
     command += r_paplot.index_template.format(
-                        paplot = gc.genomon_conf.get("SOFTWARE", "paplot"),
                         output_dir = rc.run_conf.project_root + "/paplot/" + sample_conf_name,
                         remarks = remark,
                         config_file = gc.genomon_conf.get("paplot", "config_file"))
 
-    arguments = {"pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),
-                 "paplot":  gc.genomon_conf.get("SOFTWARE", "paplot"),
-                 "command": command
-                }
-                 
-    r_paplot.task_exec(arguments, rc.run_conf.project_root + '/log/paplot', rc.run_conf.project_root + '/script/paplot')
+    arguments = {
+        "command": command
+    }
+    singularity_params = {
+        "image": gc.genomon_conf.get("paplot", "image"),
+        "option": gc.genomon_conf.get("paplot", "singularity_option"),
+        "bind": [rc.run_conf.project_root],
+    }
+    r_paplot.task_exec(arguments, rc.run_conf.project_root + '/log/paplot', rc.run_conf.project_root + '/script/paplot', singularity_params)
 

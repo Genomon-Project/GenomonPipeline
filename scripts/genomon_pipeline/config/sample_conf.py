@@ -9,6 +9,7 @@ class Sample_conf(object):
         self.fastq = {}
         self.bam_tofastq = {}
         self.bam_import = {}
+        self.bam_import_src = {}
         self.mutation_call = []
         self.sv_detection = []
         self.qc = []
@@ -100,7 +101,22 @@ class Sample_conf(object):
 
         return _file_data
 
+    def __link_sources(file_path):
+        links = []
+        link_dst = os.path.abspath(file_path)
+        while(1):
+            if os.path.islink(link_dst):
+                link_src = os.readlink(link_dst)
+                if link_src.startswith("/"):
+                    links.append(os.path.abspath(link_src))
+                else:
+                    links.append(os.path.abspath(os.path.dirname(link_dst) + "/" + link_src))
+                link_dst = os.path.abspath(link_src)
+            else:
+                break
 
+        return links
+        
     def parse_data(self, _data ):
     
         mode = ''
@@ -241,12 +257,20 @@ class Sample_conf(object):
                     raise ValueError(err_msg)
                 
                 sequence_prefix, ext = os.path.splitext(sequence)
-                if (not os.path.exists(sequence + '.bai')) and (not os.path.exists(sequence_prefix + '.bai')):
+                sequence_index = ""
+                if os.path.exists(sequence + '.bai'):
+                    sequence_index = sequence + '.bai'
+                elif os.path.exists(sequence_prefix + '.bai'):
+                    sequence_index = sequence_prefix + '.bai'
+                else:
                     err_msg = sampleID + ": " + sequence +  " index does not exists"
                     raise ValueError(err_msg)
 
+                self.bam_import_src[sampleID] = [sequence, sequence_index]
+                self.bam_import_src[sampleID].extend(__link_sources(sequence))
+                self.bam_import_src[sampleID].extend(__link_sources(sequence_index))
+                
                 self.bam_import[sampleID] = sequence
-
 
             elif mode == 'mutation_call':
 

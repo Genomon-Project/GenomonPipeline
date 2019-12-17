@@ -21,18 +21,17 @@ set -eu
 set -o pipefail
 
 # set python environment
-export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
-export PYTHONPATH={pythonpath}
+export bedtools=/usr/local/bin/bedtools
+export samtools=/usr/local/bin/samtools
 
 if [ {data_type} = "wgs" ]
 then
 ########## WGS ##########
-{genomon_qc} wgs {input_file} {output_file} --genome_size_file {genome_size_file} --gaptxt {gaptxt} --incl_bed_width {incl_bed_width} --i_bed_lines {i_bed_lines} --i_bed_width {i_bed_width} --ld_library_path {ld_library_path} --bedtools {bedtools} --samtools {samtools} --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
+genomon_qc wgs {input_file} {output_file} --genome_size_file {genome_size_file} --gaptxt {gaptxt} --incl_bed_width {incl_bed_width} --i_bed_lines {i_bed_lines} --i_bed_width {i_bed_width} --ld_library_path {ld_library_path} --bedtools {bedtools} --samtools {samtools} --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
 
 else
 ########## exome ##########
-{genomon_qc} exome {input_file} {output_file} --bait_file {bait_file} --ld_library_path {ld_library_path} --bedtools {bedtools} --samtools {samtools} --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
+genomon_qc exome {input_file} {output_file} --bait_file {bait_file} --ld_library_path {ld_library_path} --bedtools {bedtools} --samtools {samtools} --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
 fi
 """
 
