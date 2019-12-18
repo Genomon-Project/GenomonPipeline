@@ -18,9 +18,12 @@ hostname                # print hostname
 date                    # print date
 set -xv
 
+samtools=samtools
+bedtools=bedtools
+
 genomon_pa {mode} {output_dir} {genomon_root} {sample_sheet} \
 --config_file {config_file} \
---samtools {samtools} --bedtools {bedtools} \
+--samtools $samtools --bedtools $bedtools \
 --input_file_case1 "{input_file_case1}" \
 --input_file_case2 "{input_file_case2}" \
 --input_file_case3 "{input_file_case3}" \

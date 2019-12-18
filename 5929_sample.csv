@@ -2,8 +2,10 @@
 5929_tumor,/share/pub/genomon/samples/test5929/5929_tumor/sequence1.fastq,/share/pub/genomon/samples/test5929/5929_tumor/sequence2.fastq
 
 [mutation_call]
+5929_tumor,None,None
 
 [sv_detection]
+5929_tumor,None,None
 
 [qc]
 5929_tumor

@@ -19,12 +19,13 @@ date                    # print date
 set -xv
 set -o pipefail
 
+export LD_LIBRARY_PATH=/usr/local/lib
 bams=( `echo "{input_bam}" | tr -s ';' ' '`)
 
 if [ ${{#bams[@]}} -eq 1 ]; then
     bam=${{bams[0]}}
     echo $bam
-    {biobambam}/bamtofastq {param} filename=${{bam}} F={f1_name} F2={f2_name} T={t} S={s} O={o1_name} O2={o2_name} || exit $?    
+    /usr/local/bin/bamtofastq {param} filename=${{bam}} F={f1_name} F2={f2_name} T={t} S={s} O={o1_name} O2={o2_name} || exit $?    
 
 else
     echo -n > {f1_name}

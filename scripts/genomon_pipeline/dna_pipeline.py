@@ -372,8 +372,8 @@ def bam2fastq(outputfiles):
                  "s": output_dir + '/single_end_output.txt'}
     
     bind = [rc.run_conf.project_root]
-    if sample_name in sc.sample_conf.bam_tofastq_src:
-        bind.extend(sc.sample_conf.bam_tofastq_src[sample_name])
+    if sample in sc.sample_conf.bam_tofastq_src:
+        bind.extend(sc.sample_conf.bam_tofastq_src[sample])
         
     singularity_params = {
         "image": gc.genomon_conf.get("bam2fastq", "image"),
@@ -860,6 +860,7 @@ def post_analysis_mutation(input_files, output_file):
         "bind": [
             rc.run_conf.project_root,
             gc.genomon_conf.get("post_analysis", "config_file"),
+            os.path.abspath(rc.run_conf.sample_conf_file)
         ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
@@ -888,6 +889,7 @@ def post_analysis_sv(input_files, output_file):
         "bind": [
             rc.run_conf.project_root,
             gc.genomon_conf.get("post_analysis", "config_file"),
+            os.path.abspath(rc.run_conf.sample_conf_file)
         ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
@@ -915,6 +917,7 @@ def post_analysis_qc(input_files, output_file):
         "bind": [
             rc.run_conf.project_root,
             gc.genomon_conf.get("post_analysis", "config_file"),
+            os.path.abspath(rc.run_conf.sample_conf_file)
         ],
     }
     r_post_analysis.task_exec(arguments, rc.run_conf.project_root + '/log/post_analysis', rc.run_conf.project_root + '/script/post_analysis', singularity_params)
@@ -931,8 +934,8 @@ def pre_pmsignature(input_files, output_file):
                 }
                 
     singularity_params = {
-        "image": gc.genomon_conf.get("pmsignature", "image"),
-        "option": gc.genomon_conf.get("pmsignature", "singularity_option"),
+        "image": gc.genomon_conf.get("pre_pmsignature", "image"),
+        "option": gc.genomon_conf.get("pre_pmsignature", "singularity_option"),
         "bind": [rc.run_conf.project_root],
     }
     r_pre_pmsignature.task_exec(arguments, rc.run_conf.project_root + '/log/pmsignature', rc.run_conf.project_root + '/script/pmsignature', singularity_params)
