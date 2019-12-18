@@ -173,7 +173,7 @@ for complist in sc.sample_conf.fusion:
 
 
 # link the import bam to project directory
-@ruffus.originate(sc.sample_conf.bam_import.keys())
+@ruffus.originate(list(sc.sample_conf.bam_import.keys()))
 def link_import_bam(sample):
     bam = sc.sample_conf.bam_import[sample]
     link_dir = rc.run_conf.project_root + '/star/' + sample
