@@ -255,7 +255,9 @@ def task_star_align(input_files, output_file):
         rc.run_conf.project_root,
         gc.genomon_conf.get("REFERENCE", "star_genome")
     ]
+    print(sc.sample_conf.fastq_src)
     if sample_name in sc.sample_conf.fastq_src:
+        print(sample_name)
         bind.extend(sc.sample_conf.fastq_src[sample_name])
         
     singularity_params = {
@@ -341,7 +343,7 @@ def task_fusionfusion(input_file, output_file):
         "option": gc.genomon_conf.get("fusionfusion", "singularity_option"),
         "bind": [
             rc.run_conf.project_root,
-            gc.genomon_conf.get("REFERENCE", "ref_fasta")
+            os.path.dirname(gc.genomon_conf.get("REFERENCE", "ref_fasta"))
         ],
     }
     if not os.path.isdir(output_dir_name): os.mkdir(output_dir_name)

@@ -13,7 +13,4 @@ setup(name='genomon_pipeline',
       packages=['genomon_pipeline', 'genomon_pipeline.rna_resource', 'genomon_pipeline.dna_resource', 'genomon_pipeline.config'],
       scripts=['genomon_pipeline'],
       license='License of GenomonPipeline',
-      install_requires=[
-          'ruffus'
-      ],
      )

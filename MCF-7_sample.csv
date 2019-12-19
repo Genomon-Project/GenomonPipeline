@@ -1,0 +1,12 @@
+[fastq]
+MCF-7_test,/share/pub/genomon/samples/testMCF-7/test1.fastq,/share/pub/genomon/samples/testMCF-7/test2.fastq
+
+[fusion]
+
+[expression]
+
+[intron_retention]
+
+[qc]
+MCF-7_test
+

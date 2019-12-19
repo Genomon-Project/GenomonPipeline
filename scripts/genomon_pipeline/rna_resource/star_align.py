@@ -18,6 +18,7 @@ hostname                # print hostname
 date                    # print date
 set -xv
 set -o pipefail
+set -e
 
 export LD_LIBRARY_PATH=/usr/local/lib
 

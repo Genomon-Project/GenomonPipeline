@@ -42,9 +42,9 @@ def _conf_check(target_section = None, target_option = None):
             for option in genomon_conf[target_section]:
                 __path_check(target_section, option)
         else:
-            __path_check(target_option, target_option) 
+            __path_check(target_section, target_option) 
                     
-def dna_genomon_conf_check(section):
+def dna_genomon_conf_check():
     """
     function for checking the validity of genomon_conf for DNA analysis
     """
