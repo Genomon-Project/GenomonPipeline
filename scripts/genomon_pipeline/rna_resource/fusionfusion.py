@@ -20,18 +20,14 @@ set -xv
 set -o pipefail
 
 # set python environment
-export PYTHONHOME={pythonhome}
-blat_home={blat}
-export PATH=${{blat_home%/*}}:{htslib}:$PYTHONHOME/bin:$PATH
-export LD_LIBRARY_PATH={ld_library_path}
-export PYTHONPATH={pythonpath}
+export LD_LIBRARY_PATH=/usr/local/lib
 
-{fusionfusion} --star {chimeric_sam} --out {output_prefix} --reference_genome {ref_fa} {additional_params} || exit $?
+/usr/local/bin/fusionfusion --star {chimeric_sam} --out {output_prefix} --reference_genome {ref_fa} {additional_params} || exit $?
 
 mv {output_prefix}/star.fusion.result.txt {output_prefix}/{sample}.star.fusion.result.txt || exit $?
 mv {output_prefix}/fusion_fusion.result.txt {output_prefix}/{sample}.genomonFusion.result.txt || exit $?
 
-{fusion_utils} filt {output_prefix}/{sample}.genomonFusion.result.txt {output_prefix}/{sample}.fusion.fusion.result.filt.txt {filt_params} || exit $?
+/usr/local/bin/fusion_utils filt {output_prefix}/{sample}.genomonFusion.result.txt {output_prefix}/{sample}.fusion.fusion.result.filt.txt {filt_params} || exit $?
 mv {output_prefix}/{sample}.fusion.fusion.result.filt.txt {output_prefix}/{sample}.genomonFusion.result.filt.txt
 """
 

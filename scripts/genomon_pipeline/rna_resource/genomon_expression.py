@@ -19,13 +19,7 @@ date                    # print date
 set -xv
 set -o pipefail
 
-# set python environment
-export PYTHONHOME={pythonhome}
-bedtools_home={bedtools}
-export PATH=${{bedtools_home%/*}}:{htslib}:$PYTHONHOME/bin:$PATH
-export PYTHONPATH={pythonpath}
-
-{genomon_expression} {additional_params} {input_bam} {output_prefix}
+genomon_expression {additional_params} {input_bam} {output_prefix}
 mv {output_prefix}.sym2fpkm.txt {output_prefix}.genomonExpression.result.txt
 """
 

@@ -20,12 +20,9 @@ set -xv
 set -o pipefail
 
 # set python environment
-export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
-export LD_LIBRARY_PATH={ld_library_path}
-export PYTHONPATH={pythonpath}
+export LD_LIBRARY_PATH=/usr/local/lib
 
-{chimera_utils} count {additional_params} {chimeric_sam} {output}
+chimera_utils count {additional_params} {chimeric_sam} {output}
 """
 
     def __init__(self, qsub_option, script_dir):

@@ -19,11 +19,13 @@ date                    # print date
 set -xv
 set -o pipefail
 
-{star} --genomeDir {star_genome} --readFilesIn {fastq1} {fastq2} --outFileNamePrefix {out_prefix} {additional_params} 
+export LD_LIBRARY_PATH=/usr/local/lib
 
-{samtools} sort -T {out_prefix}Aligned.sortedByCoord.out {samtools_sort_params} {out_prefix}Aligned.out.bam -O bam > {out_prefix}Aligned.sortedByCoord.out.bam 
+/usr/local/bin/STAR --genomeDir {star_genome} --readFilesIn {fastq1} {fastq2} --outFileNamePrefix {out_prefix} {additional_params} 
 
-{samtools} index {out_prefix}Aligned.sortedByCoord.out.bam 
+/usr/local/bin/samtools sort -T {out_prefix}Aligned.sortedByCoord.out {samtools_sort_params} {out_prefix}Aligned.out.bam -O bam > {out_prefix}Aligned.sortedByCoord.out.bam 
+
+/usr/local/bin/samtools index {out_prefix}Aligned.sortedByCoord.out.bam 
 
 rm -rf {out_prefix}Aligned.out.bam
 """

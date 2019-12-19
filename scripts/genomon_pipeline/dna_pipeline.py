@@ -1059,13 +1059,12 @@ def paplot(input_file, output_file):
         key = item.split(":")[0].strip(" ").rstrip(" ")
         name = item.split(":")[1].strip(" ").rstrip(" ")
         try:
-            version = gc.get_version(key).split("-")
+            version = gc.get_version(key)
         except Exception:
             print ("[WARNING] paplot: %s is not defined." % (key))
             continue
         
-        remark += "<li>" + name + " " + version[-1] + "</li>"
-
+        remark += "<li>" + name + " " + version + "</li>"
     remark += "</ul>"
     
     command += r_paplot.index_template.format(

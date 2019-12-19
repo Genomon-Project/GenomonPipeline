@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os, pwd, subprocess, sys
+import os, pwd, sys
 if sys.version_info.major == 2:
     import ConfigParser as cp
 else:
@@ -14,122 +14,74 @@ genomon_conf = cp.SafeConfigParser()
 
 software_version ={'genomon_pipeline':'genomon_pipeline-'+__version__}
 
-dna_reference_list = ["ref_fasta",
-                      "interval_list",
-                      "genome_size",
-                      "gaptxt",
-                      "bait_file",
-                      ]
-           
-dna_software_list = ["annovar",
-                     ]
-"""
-dna_software_version = {"genomon_sv":"GenomonSV",
-                        "sv_utils": "sv_utils",
-                        "fisher":"GenomonFisher",
-                        "mutfilter":"GenomonMutationFilter",
-                        "ebfilter":"EBFilter",
-                        "mutil": "MutationUtil",
-                        "mutanno": "GenomonMutationAnnotation",
-                        "genomon_qc": "genomon_qc",
-                        "hotspot": "hotspotCall",
-                        } 
-"""
 dna_software_version = {} 
-rna_reference_list = ["star_genome"
-                      ]
-           
-rna_software_list = []
-
-"""
-rna_software_version = {"STAR": "STAR",
-                        "fusionfusion":"fusionfusion",
-                        } 
-"""
 rna_software_version = {} 
+
 err_msg = 'No target File : \'%s\' for the %s key in the section of %s' 
 
 
-def dna_genomon_conf_check():
+def _conf_check(target_section = None, target_option = None):
+    def __path_check(section, option):
+        value = genomon_conf.get(section, option)
+        if value == "":
+            return True
+        if os.path.exists(value):
+            return True
+        raise ValueError(err_msg % (value, option, section))
+
+    if target_section == None:
+        for section in genomon_conf.sections():
+            if target_option == None:
+                for option in genomon_conf[section]:
+                    __path_check(section, option)
+            else:
+                if target_option in genomon_conf[section]:
+                    __path_check(section, target_option)                  
+    else:
+        if target_option == None:
+            for option in genomon_conf[target_section]:
+                __path_check(target_section, option)
+        else:
+            __path_check(target_option, target_option) 
+                    
+def dna_genomon_conf_check(section):
     """
     function for checking the validity of genomon_conf for DNA analysis
     """
 
-    section = "REFERENCE"
-    for key in dna_reference_list:
+    _conf_check(target_section = "REFERENCE")
+    _conf_check(target_option = "image")
     
-        value = genomon_conf.get(section, key)
-        if not os.path.exists(value):
-            raise ValueError(err_msg % (value, key, section))
-    
-    """
-    section = "SOFTWARE"
-    for key in dna_software_list:
-        
-        if key == "annovar":
-            if genomon_conf.has_option("annotation", "active_annovar_flag"):
-                flag = genomon_conf.get("annotation", "active_annovar_flag")
-                if flag == "True":
-                    value = genomon_conf.get(section, key)
-                    if not os.path.exists(value):
-                        raise ValueError(err_msg % (value, key, section))
-            continue
-            
-        value = genomon_conf.get(section, key)
-        if not os.path.exists(value):
-            raise ValueError(err_msg % (value, key, section))
-    """
-    pass
+    if genomon_conf.has_option("annotation", "active_annovar_flag") :
+        if genomon_conf.get("annotation", "active_annovar_flag"):
+            _conf_check(target_section = "SOFTWARE", target_option = "annovar")
+                
 
 def rna_genomon_conf_check():
     """
     function for checking the validity of genomon_conf for RNA analysis
     """
 
-    section = "REFERENCE"
-    for key in rna_reference_list:
-        value = genomon_conf.get(section, key)
-        if not os.path.exists(value):
-            raise ValueError(err_msg % (value, key, section))
-    """
-    section = "SOFTWARE"
-    for key in rna_software_list:
-        value = genomon_conf.get(section, key)
-        if not os.path.exists(value):
-            raise ValueError(err_msg % (value, key, section))
-    """
-    pass
+    _conf_check(target_section = "REFERENCE")
+    _conf_check(target_option = "image")
 
+def _image_version():
+    for section in genomon_conf.sections():
+        if "image" in genomon_conf[section]:
+            value = genomon_conf.get(section, "image")
+            if value == "":
+                continue
+            image = value.replace(".simg", "").split("/")[-1]
+            software_version[section] = image
 
 def dna_software_version_set():
-    pass
-    """
-    pythonhome = genomon_conf.get("ENV", "PYTHONHOME")
-    pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
-    ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
-    export_command = "export PYTHONHOME=" +pythonhome+ ";export PATH=$PYTHONHOME/bin:$PATH;export LD_LIBRARY_PATH="+ ld_library_path +";export PYTHONPATH="+ pythonpath +";"
-    for key, name in dna_software_version.items():
-        command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
-        proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        version_list = str(proc.communicate()[0]).split("\n")
-        software_version[key] = version_list[0]
-    """
+    _image_version()
+    
 def rna_software_version_set():
-    pass
-    """
-    pythonhome = genomon_conf.get("ENV", "PYTHONHOME")
-    pythonpath = genomon_conf.get("ENV", "PYTHONPATH")
-    ld_library_path = genomon_conf.get("ENV", "LD_LIBRARY_PATH")
-    export_command = "export PYTHONHOME=" +pythonhome+ ";export PATH=$PYTHONHOME/bin:$PATH;export LD_LIBRARY_PATH="+ ld_library_path +";export PYTHONPATH="+ pythonpath +";"
-    for key, name in rna_software_version.items():
-        command = export_command + genomon_conf.get("SOFTWARE", key) + ' --version 2>&1 | grep ' + name
-        proc = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        version_list = str(proc.communicate()[0]).split("\n")
-        software_version[key] = version_list[0]
-    """
+    _image_version()
+    
 def get_version(key):
     return software_version[key]
-
 
 def get_meta_info(softwares):
 
