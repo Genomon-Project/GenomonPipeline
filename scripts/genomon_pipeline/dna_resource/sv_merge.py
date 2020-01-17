@@ -19,13 +19,7 @@ date                    # print date
 set -xv
 set -o pipefail
 
-# set python environment
-export PYTHONHOME={pythonhome}
-export PATH={htslib}:$PYTHONHOME/bin:$PATH
-export LD_LIBRARY_PATH={ld_library_path}
-export PYTHONPATH={pythonpath}
-
-{genomon_sv} merge {control_info} {merge_output_file} {param} || exit $?  
+GenomonSV merge {control_info} {merge_output_file} {param} || exit $?  
 
 """
 

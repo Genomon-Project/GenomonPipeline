@@ -17,12 +17,6 @@ date                    # print date
 set -xv
 set -o pipefail
 
-# set python environment
-export PYTHONHOME={pythonhome}
-export PATH=$PYTHONHOME/bin:$PATH
-export LD_LIBRARY_PATH={ld_library_path}
-export PYTHONPATH={pythonpath}
-
 mut_header=""
 
 if [ _{control_bam} = "_None" ]
@@ -131,16 +125,16 @@ if [ _{control_bam} = "_None" ]
 then 
     if [ _{active_hotspot_flag} = "_True" ]
     then 
-        {mutil} filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {single_params} --hotspot_db {hotspot_database}
+        mutil filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {single_params} --hotspot_db {hotspot_database}
     else
-        {mutil} filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {single_params}
+        mutil filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {single_params}
     fi
 else
     if [ _{active_hotspot_flag} = "_True" ]
     then 
-        {mutil} filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {pair_params} --hotspot_db {hotspot_database}
+        mutil filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {pair_params} --hotspot_db {hotspot_database}
     else
-        {mutil} filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {pair_params}
+        mutil filter -i {out_prefix}.genomon_mutation.result.txt -o {out_prefix}.genomon_mutation.result.filt.txt {pair_params}
     fi
 fi
 

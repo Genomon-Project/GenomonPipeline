@@ -506,6 +506,14 @@ def markdup(input_files, output_file, output_dir):
         os.unlink(input_file)
         os.unlink(input_file + ".bai")
 
+def bam_path_to_sample_id(bam_path):
+    return os.path.basename(bam_path).replace(".markdup.bam", "")
+def get_param(conf, section, param, default="", flag=True):
+    if flag == False:
+        return default
+    if conf.has_option(section, param) == False:
+        return default
+    return conf.get(section, param)
 
 # identify mutations
 @ruffus.follows( markdup )
@@ -515,37 +523,58 @@ def identify_mutations(input_file, output_file, output_dir):
 
     sample_name = os.path.basename(output_dir)
 
-    active_inhouse_normal_flag = False
-    if gc.genomon_conf.has_option("annotation", "active_inhouse_normal_flag"):
-        active_inhouse_normal_flag = gc.genomon_conf.get("annotation", "active_inhouse_normal_flag")
+    bind = [
+        rc.run_conf.project_root,
+        os.path.dirname(gc.genomon_conf.get("REFERENCE", "ref_fasta")),
+        os.path.dirname(gc.genomon_conf.get("REFERENCE", "interval_list")),
+        os.path.dirname(gc.genomon_conf.get("REFERENCE", "simple_repeat_tabix_db")),
+    ]
+    databases = []
 
-    inhouse_normal_tabix_db = ""
-    if gc.genomon_conf.has_option("REFERENCE", "inhouse_normal_tabix_db"):
-        inhouse_normal_tabix_db = gc.genomon_conf.get("REFERENCE", "inhouse_normal_tabix_db")
+    active_inhouse_normal_flag = get_param(gc.genomon_conf, "annotation", "active_inhouse_normal_flag", default=False)
+    inhouse_normal_tabix_db = get_param(gc.genomon_conf, "REFERENCE", "inhouse_normal_tabix_db", flag=active_inhouse_normal_flag)
+    databases.append(inhouse_normal_tabix_db)
 
-    active_inhouse_tumor_flag = False
-    if gc.genomon_conf.has_option("annotation", "active_inhouse_tumor_flag"):
-        active_inhouse_tumor_flag = gc.genomon_conf.get("annotation", "active_inhouse_tumor_flag")
+    active_inhouse_tumor_flag = get_param(gc.genomon_conf, "annotation", "active_inhouse_tumor_flag", default=False)
+    inhouse_tumor_tabix_db = get_param(gc.genomon_conf, "REFERENCE", "inhouse_tumor_tabix_db", flag=active_inhouse_tumor_flag)
+    databases.append(inhouse_tumor_tabix_db)
 
-    inhouse_tumor_tabix_db = ""
-    if gc.genomon_conf.has_option("REFERENCE", "inhouse_tumor_tabix_db"):
-        inhouse_tumor_tabix_db = gc.genomon_conf.get("REFERENCE", "inhouse_tumor_tabix_db")
+    active_HGMD_flag = get_param(gc.genomon_conf, "annotation", "active_HGMD_flag", default=False)
+    HGMD_tabix_db = get_param(gc.genomon_conf, "REFERENCE", "HGMD_tabix_db", flag=active_HGMD_flag)
+    databases.append(HGMD_tabix_db)
 
-    active_HGMD_flag = False
-    if gc.genomon_conf.has_option("annotation", "active_HGMD_flag"):
-        active_HGMD_flag = gc.genomon_conf.get("annotation", "active_HGMD_flag")
+    active_annovar_flag = get_param(gc.genomon_conf, "annotation", "active_annovar_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "SOFTWARE", "annovar", flag=active_annovar_flag))
+    databases.append(get_param(gc.genomon_conf, "annotation", "annovar_database", flag=active_annovar_flag))
+
+    active_hotspot_flag = get_param(gc.genomon_conf, "hotspot","active_hotspot_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "REFERENCE","hotspot_db", flag=active_hotspot_flag))
+
+    active_ExAC_flag = get_param(gc.genomon_conf, "annotation", "active_ExAC_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "REFERENCE", "ExAC_tabix_db", flag=active_ExAC_flag))
         
-    HGMD_tabix_db = ""
-    if gc.genomon_conf.has_option("REFERENCE", "HGMD_tabix_db"):
-        HGMD_tabix_db = gc.genomon_conf.get("REFERENCE", "HGMD_tabix_db")
+    active_HGVD_2013_flag = get_param(gc.genomon_conf, "annotation", "active_HGVD_2013_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "REFERENCE", "HGVD_2013_tabix_db", flag=active_HGVD_2013_flag))
 
+    active_HGVD_2016_flag = get_param(gc.genomon_conf, "annotation", "active_HGVD_2016_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "REFERENCE", "HGVD_2016_tabix_db", flag=active_HGVD_2016_flag))
+    
+    active_hotspot_flag = get_param(gc.genomon_conf, "hotspot", "active_hotspot_flag", default=False)
+    databases.append(get_param(gc.genomon_conf, "REFERENCE", "hotspot_db", flag=active_hotspot_flag))
+
+    for item in databases:
+        if item == "":
+            continue
+        if os.path.isdir(item):
+            bind.append(item)
+        elif os.path.isfile(item):
+            bind.append(os.path.dirname(item))
+  
     arguments = {
         # fisher mutation
-        "fisher": gc.genomon_conf.get("SOFTWARE", "fisher"),
         "fisher_pair_params": gc.genomon_conf.get("fisher_mutation_call", "pair_params"),
         "fisher_single_params": gc.genomon_conf.get("fisher_mutation_call", "single_params"),
         # realignment filter
-        "mutfilter": gc.genomon_conf.get("SOFTWARE", "mutfilter"),
         "realignment_params": gc.genomon_conf.get("realignment_filter","params"),
         # indel filter
         "indel_params": gc.genomon_conf.get("indel_filter", "params"),
@@ -554,19 +583,15 @@ def identify_mutations(input_file, output_file, output_dir):
         # simplerepeat filter
         "simple_repeat_db": gc.genomon_conf.get("REFERENCE", "simple_repeat_tabix_db"),
         # EB filter
-        "EBFilter": gc.genomon_conf.get("SOFTWARE", "ebfilter"),
         "eb_map_quality": gc.genomon_conf.get("eb_filter","map_quality"),
         "eb_base_quality": gc.genomon_conf.get("eb_filter","base_quality"),
         "filter_flags": gc.genomon_conf.get("eb_filter","filter_flags"),
         "control_bam_list": input_file[2],
         # hotspot mutation caller
-        "hotspot": gc.genomon_conf.get("SOFTWARE","hotspot"),
         "hotspot_database": gc.genomon_conf.get("REFERENCE","hotspot_db"),
         "active_hotspot_flag": gc.genomon_conf.get("hotspot","active_hotspot_flag"),
         "hotspot_params": gc.genomon_conf.get("hotspot","params"),
-        "mutil": gc.genomon_conf.get("SOFTWARE", "mutil"),
         # original_annotations
-        "mutanno": gc.genomon_conf.get("SOFTWARE", "mutanno"),
         "active_inhouse_normal_flag": active_inhouse_normal_flag,
         "inhouse_normal_database":inhouse_normal_tabix_db,
         "active_inhouse_tumor_flag": active_inhouse_tumor_flag,
@@ -586,26 +611,36 @@ def identify_mutations(input_file, output_file, output_dir):
         "table_annovar_params": gc.genomon_conf.get("annotation", "table_annovar_params"),
         "annovar_buildver": gc.genomon_conf.get("annotation", "annovar_buildver"),
         # commmon
-        "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-        "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),   
-        "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
         "ref_fa": gc.genomon_conf.get("REFERENCE", "ref_fasta"),
         "interval_list": gc.genomon_conf.get("REFERENCE", "interval_list"),
         "disease_bam": input_file[0],
         "control_bam": input_file[1],
         "out_prefix": output_dir + '/' + sample_name,
-        "samtools": gc.genomon_conf.get("SOFTWARE", "samtools"),
-        "blat": gc.genomon_conf.get("SOFTWARE", "blat")}
-
+    }
     interval_list = gc.genomon_conf.get("REFERENCE", "interval_list")
     max_task_id = sum(1 for line in open(interval_list))
+    
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    if input_file[1] != None:
+        normal_sample = bam_path_to_sample_id(input_file[1])
+        if normal_sample in sc.sample_conf.bam_import_src:
+             bind.extend(sc.sample_conf.bam_import_src[normal_sample])
+    if input_file[2] != None:
+        for row in open(input_file[2]).readlines():
+            panel_sample = bam_path_to_sample_id(row.rstrip())
+            if panel_sample in sc.sample_conf.bam_import_src:
+                 bind.extend(sc.sample_conf.bam_import_src[panel_sample])
 
-    mutation_call.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, max_task_id)
+    bind = list(set(bind))    
+    singularity_params = {
+        "image": gc.genomon_conf.get("mutation_call", "image"),
+        "option": gc.genomon_conf.get("mutation_call", "singularity_option"),
+        "bind": bind,
+    }
+    mutation_call.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, singularity_params, max_task_id)
     
     arguments = {
-        "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-        "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),   
-        "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
         "control_bam": input_file[1],
         "control_bam_list": input_file[2],
         "active_annovar_flag": gc.genomon_conf.get("annotation", "active_annovar_flag"),
@@ -617,18 +652,22 @@ def identify_mutations(input_file, output_file, output_dir):
         "active_inhouse_normal_flag": active_inhouse_normal_flag,
         "active_inhouse_tumor_flag": active_inhouse_tumor_flag,
         "filecount": max_task_id,
-        "mutil": gc.genomon_conf.get("SOFTWARE", "mutil"),
         "pair_params": gc.genomon_conf.get("mutation_util","pair_params"),
         "single_params": gc.genomon_conf.get("mutation_util","single_params"),
         "active_hotspot_flag": gc.genomon_conf.get("hotspot","active_hotspot_flag"),
         "hotspot_database": gc.genomon_conf.get("REFERENCE","hotspot_db"),
-        "meta_info_em": gc.get_meta_info(["fisher", "mutfilter", "ebfilter", "mutil", "mutanno"]),
-        "meta_info_m": gc.get_meta_info(["fisher", "mutfilter", "mutil", "mutanno"]),
-        "meta_info_ema": gc.get_meta_info(["fisher", "mutfilter", "ebfilter", "mutil", "mutanno", "hotspot"]),
-        "meta_info_ma": gc.get_meta_info(["fisher", "mutfilter", "mutil", "mutanno", "hotspot"]),
+        "meta_info_em": gc.get_meta_info(["mutation_call"]),
+        "meta_info_m": gc.get_meta_info(["mutation_call"]),
+        "meta_info_ema": gc.get_meta_info(["mutation_call"]),
+        "meta_info_ma": gc.get_meta_info(["mutation_call"]),
         "out_prefix": output_dir + '/' + sample_name}
 
-    mutation_merge.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name)
+    singularity_params = {
+        "image": gc.genomon_conf.get("mutation_call", "image"),
+        "option": gc.genomon_conf.get("mutation_call", "singularity_option"),
+        "bind": bind,
+    }
+    mutation_merge.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
     annovar_buildver = gc.genomon_conf.get("annotation", "annovar_buildver"),
     for task_id in range(1,(max_task_id + 1)):
@@ -641,7 +680,7 @@ def identify_mutations(input_file, output_file, output_dir):
         if os.path.exists(output_dir+'/'+sample_name+'.hotspot_mutations.'+str(task_id)+'.txt'):
             os.unlink(output_dir+'/'+sample_name+'.hotspot_mutations.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.fisher_hotspot_mutations.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.fisher_hotspot_mutations.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.fisher_hotspot_mutations.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.realignment_mutations.'+str(task_id)+'.txt'):
             os.unlink(output_dir+'/'+sample_name+'.realignment_mutations.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.indel_mutations.'+str(task_id)+'.txt'):
@@ -653,17 +692,17 @@ def identify_mutations(input_file, output_file, output_dir):
         if os.path.exists(output_dir+'/'+sample_name+'.ebfilter_mutations.'+str(task_id)+'.txt'):
             os.unlink(output_dir+'/'+sample_name+'.ebfilter_mutations.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.inhouse_normal.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.inhouse_normal.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.inhouse_normal.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.inhouse_tumor.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.inhouse_tumor.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.inhouse_tumor.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.HGVD_2013.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.HGVD_2013.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.HGVD_2013.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.HGVD_2016.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.HGVD_2016.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.HGVD_2016.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.ExAC.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.ExAC.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.ExAC.'+str(task_id)+'.txt')
         if os.path.exists(output_dir+'/'+sample_name+'.HGMD.'+str(task_id)+'.txt'):
-           os.unlink(output_dir+'/'+sample_name+'.HGMD.'+str(task_id)+'.txt')
+            os.unlink(output_dir+'/'+sample_name+'.HGMD.'+str(task_id)+'.txt')
 
 # parse SV 
 @ruffus.follows( link_import_bam )
@@ -675,16 +714,21 @@ def parse_sv(input_file, output_file):
     if not os.path.isdir(dir_name): os.mkdir(dir_name)
     sample_name = os.path.basename(dir_name)
 
-    arguments = {"genomon_sv": gc.genomon_conf.get("SOFTWARE", "genomon_sv"),
+    arguments = {
                  "input_bam": input_file,
                  "output_prefix": output_file.replace(".junction.clustered.bedpe.gz", ""),
                  "param": gc.genomon_conf.get("sv_parse", "params"),
-                 "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),   
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "htslib": gc.genomon_conf.get("SOFTWARE", "htslib")}
-
-    sv_parse.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name)
+                }
+    bind = [rc.run_conf.project_root]
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    
+    singularity_params = {
+        "image": gc.genomon_conf.get("sv_merge", "image"),
+        "option": gc.genomon_conf.get("sv_merge", "singularity_option"),
+        "bind": bind,
+    }
+    sv_parse.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name , rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
 
 # merge SV
@@ -692,16 +736,26 @@ def parse_sv(input_file, output_file):
 @ruffus.transform(merge_bedpe_list, ruffus.formatter(".+/(?P<NAME>.+).control_info.txt"), "{subpath[0][2]}/sv/non_matched_control_panel/{NAME[0]}.merged.junction.control.bedpe.gz")
 def merge_sv(input_files,  output_file):
 
-    arguments = {"genomon_sv": gc.genomon_conf.get("SOFTWARE", "genomon_sv"),
+    arguments = {
                  "control_info": input_files[0],
                  "merge_output_file": output_file,
                  "param": gc.genomon_conf.get("sv_merge", "params"),
-                 "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),   
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "htslib": gc.genomon_conf.get("SOFTWARE", "htslib")}
-
-    sv_merge.task_exec(arguments, rc.run_conf.project_root + '/log/sv_merge', rc.run_conf.project_root + '/script/sv_merge')
+                }
+    bind = [
+        rc.run_conf.project_root,
+    ]
+    if input_files[0] != None:
+        for row in open(input_files[0]).readlines():
+            panel_sample = row.split("\t")[0]
+            if panel_sample in sc.sample_conf.bam_import_src:
+                 bind.extend(sc.sample_conf.bam_import_src[panel_sample])
+    
+    singularity_params = {
+        "image": gc.genomon_conf.get("sv_merge", "image"),
+        "option": gc.genomon_conf.get("sv_merge", "singularity_option"),
+        "bind": bind,
+    }
+    sv_merge.task_exec(arguments, rc.run_conf.project_root + '/log/sv_merge', rc.run_conf.project_root + '/script/sv_merge', singularity_params)
 
 
 # filt SV
@@ -730,21 +784,29 @@ def filt_sv(input_files,  output_file):
 
     filt_param = filt_param.lstrip(' ') + ' ' + gc.genomon_conf.get("sv_filt", "params")
 
-    arguments = {"genomon_sv": gc.genomon_conf.get("SOFTWARE", "genomon_sv"),
+    arguments = {
                  "input_bam": rc.run_conf.project_root + "/bam/" + sample_name + '/' + sample_name + ".markdup.bam",
                  "output_prefix": rc.run_conf.project_root + "/sv/" + sample_name + '/' + sample_name,
                  "reference_genome": gc.genomon_conf.get("REFERENCE", "ref_fasta"),
                  "param": filt_param,
-                 "meta_info": gc.get_meta_info(["genomon_sv", "sv_utils"]),
-                 "sv_utils": gc.genomon_conf.get("SOFTWARE", "sv_utils"),
+                 "meta_info": gc.get_meta_info(["sv_parse", "sv_merge", "sv_filt"]),
                  "sv_utils_param": gc.genomon_conf.get("sv_filt", "sv_utils_params"),
-                 "pythonhome": gc.genomon_conf.get("ENV", "PYTHONHOME"),
-                 "pythonpath": gc.genomon_conf.get("ENV", "PYTHONPATH"),   
-                 "ld_library_path": gc.genomon_conf.get("ENV", "LD_LIBRARY_PATH"),
-                 "htslib": gc.genomon_conf.get("SOFTWARE", "htslib"),
-                 "blat": gc.genomon_conf.get("SOFTWARE", "blat")}
+                }
+    bind = [
+        rc.run_conf.project_root,
+        os.path.dirname(gc.genomon_conf.get("REFERENCE", "ref_fasta"))
+    ]
+    if sample_name in sc.sample_conf.bam_import_src:
+        bind.extend(sc.sample_conf.bam_import_src[sample_name])
+    if complist[1] != None and complist[1] in sc.sample_conf.bam_import_src: 
+        bind.extend(sc.sample_conf.bam_import_src[complist[1]])
 
-    sv_filt.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name)
+    singularity_params = {
+        "image": gc.genomon_conf.get("sv_filt", "image"),
+        "option": gc.genomon_conf.get("sv_filt", "singularity_option"),
+        "bind": bind,
+    }
+    sv_filt.task_exec(arguments, rc.run_conf.project_root + '/log/' + sample_name, rc.run_conf.project_root + '/script/' + sample_name, singularity_params)
 
 
 # qc
