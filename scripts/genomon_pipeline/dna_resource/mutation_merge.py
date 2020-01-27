@@ -48,7 +48,20 @@ print_header=""
 
 if [ _{active_annovar_flag} = _True ]
 then
-    tmp_header=`head -n 1 {out_prefix}_mutations_candidate.1.{annovar_buildver}_multianno.txt | awk -F"\t" -v OFS="\t" '{{$NF=""; sub(/.$/,""); print $0}}'` || exit $?
+#   tmp_header=`head -n 1 {out_prefix}_mutations_candidate.1.{annovar_buildver}_multianno.txt | awk -F"\t" -v OFS="\t" '{{$NF=""; sub(/.$/,""); print $0}}'` || exit $?
+
+    tmp_header=`head -n 1 {out_prefix}_mutations_candidate.1.{annovar_buildver}_multianno.txt`
+    tmp_line=""
+    for field in $tmp_header; do
+        if [ "_$field" = "_Otherinfo1" ]; then
+            break
+        elif [ "_$field" = "_Otherinfo" ]; then
+            break
+        fi
+        tmp_line="$tmp_line,$field"
+    done
+    tmp_header=`echo $tmp_line | sed -e 's/^,//g' | tr "," "\t"` 
+
     print_header=${{tmp_header}}
 
     tmp_header=`echo $mut_header | cut -d "," -f 6- | tr "," "\t"` || exit $?
