@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import os
-import ruffus
 import genomon_pipeline.config.genomon_conf as gc
 import genomon_pipeline.config.run_conf as rc
 import genomon_pipeline.config.sample_conf as sc
@@ -27,20 +26,6 @@ def main(args):
     if rc.run_conf.analysis_type == "dna":
         gc.dna_genomon_conf_check()
         gc.dna_software_version_set()
-    elif rc.run_conf.analysis_type == "rna":
-        gc.rna_genomon_conf_check()
-        gc.rna_software_version_set()
-    else:
-        raise NotImplementedError("Just DNA and RNA pipeline is prepared")
-
-    if not (args.param_check):
-        if rc.run_conf.analysis_type == "dna":
-            import genomon_pipeline.dna_pipeline
-        elif rc.run_conf.analysis_type == "rna":
-            import genomon_pipeline.rna_pipeline
-        ruffus.pipeline_run(
-                     verbose = args.verbose, 
-                     multiprocess = args.multiprocess
-                    )
-
+        import genomon_pipeline.dna_pipeline
+        genomon_pipeline.dna_pipeline.configure(genomon_conf = gc, run_conf = rc, sample_conf = sc)
         
