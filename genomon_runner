@@ -1,0 +1,16 @@
+#! /usr/bin/env python
+
+import genomon_pipeline.stage_task
+import argparse
+
+parser = argparse.ArgumentParser(prog = "genomon_runner")
+
+parser.add_argument("--version", action = "version", version = "genomon_pipeline-" + genomon_pipeline.__version__)
+
+parser.add_argument('stage', choices=['bwa', 'mutation', 'sv_parse', 'sv_merge', 'sv_filt'], help = "analysis type")
+parser.add_argument("conf", metavar = "sample.conf.yml", type = str, help = "input sample list flie [YAML]")
+parser.set_defaults(handler=genomon_pipeline.stage_task.main)
+
+args = parser.parse_args()
+
+args.handler(args)

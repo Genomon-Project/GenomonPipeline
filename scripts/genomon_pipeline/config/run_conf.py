@@ -5,8 +5,6 @@ import datetime
 date_format = "{year:0>4d}-{month:0>2d}-{day:0>2d} {hour:0>2d}:{min:0>2d}:{second:0>2d}"
 timestamp_format = "{year:0>4d}{month:0>2d}{day:0>2d}_{hour:0>2d}{min:0>2d}{second:0>2d}_{msecond:0>6d}"
 
-global run_conf
-
 class Run_conf(object):
     """
     class for job related parameters
@@ -38,6 +36,3 @@ class Run_conf(object):
                                       min = now.minute,
                                       second = now.second,
                                       msecond = now.microsecond)
-
-run_conf = Run_conf()
-

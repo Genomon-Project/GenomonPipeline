@@ -9,23 +9,24 @@ def main(args):
 
     ###
     # set run_conf
-    rc.run_conf.sample_conf_file = args.sample_conf_file
-    rc.run_conf.analysis_type = args.analysis_type
-    rc.run_conf.project_root = os.path.abspath(args.project_root)
-    rc.run_conf.genomon_conf_file = args.genomon_conf_file
-    rc.run_conf.drmaa = False if args.disable_drmaa else True
+    run_conf = rc.Run_conf()
+    run_conf.sample_conf_file = args.sample_conf_file
+    run_conf.analysis_type = args.analysis_type
+    run_conf.project_root = os.path.abspath(args.project_root)
+    run_conf.genomon_conf_file = args.genomon_conf_file
+    run_conf.drmaa = False if args.disable_drmaa else True
 
     ###
     # read sample list file
-    sc.sample_conf.parse_file(rc.run_conf.sample_conf_file)
-
+    sample_conf = sc.Sample_conf(run_conf.sample_conf_file)
+    
     ###
     # set genomon_conf and task parameter config data
-    gc.genomon_conf.read(rc.run_conf.genomon_conf_file)
+    genomon_conf = gc.Genomon_conf(conf = run_conf.genomon_conf_file, analysis_date = run_conf.analysis_date)
     
-    if rc.run_conf.analysis_type == "dna":
-        gc.dna_genomon_conf_check()
-        gc.dna_software_version_set()
-        import genomon_pipeline.dna_pipeline
-        genomon_pipeline.dna_pipeline.configure(genomon_conf = gc, run_conf = rc, sample_conf = sc)
+    if run_conf.analysis_type == "dna":
+        #genomon_conf.genomon_conf_check()
+        genomon_conf.software_version_set()
+        import genomon_pipeline.dna_configure
+        genomon_pipeline.dna_configure.main(genomon_conf = genomon_conf.genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
         

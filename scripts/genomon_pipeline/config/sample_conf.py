@@ -4,7 +4,7 @@ import os
 
 class Sample_conf(object):
 
-    def __init__(self):
+    def __init__(self, sample_conf_file):
 
         self.fastq = {}
         self.fastq_src = {}
@@ -19,10 +19,8 @@ class Sample_conf(object):
         self.fusion = []
         self.expression = []
         self.intron_retention = []
-        # 
-        # should add the file exist check here ?
-        #
-    
+        
+        self.parse_file(sample_conf_file)
 
     def parse_file(self, file_path):
 
@@ -417,9 +415,4 @@ class Sample_conf(object):
         #     if comp[2] is not None and comp[2] not in self.controlpanel:
         #         err_msg = "[compare] section, controlpanelID: " + comp[2] + " is not defined"
         #         raiseValueError(err_msg)
-
-
-global sample_conf 
-sample_conf = Sample_conf()
-
 
