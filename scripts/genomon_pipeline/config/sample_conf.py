@@ -1,10 +1,9 @@
 #! /usr/bin/env python
-
 import os
 
 class Sample_conf(object):
 
-    def __init__(self, sample_conf_file):
+    def __init__(self, sample_conf_file, no_exist_check = False):
 
         self.fastq = {}
         self.fastq_src = {}
@@ -19,24 +18,20 @@ class Sample_conf(object):
         self.fusion = []
         self.expression = []
         self.intron_retention = []
+        self.no_exist_check = no_exist_check
         
         self.parse_file(sample_conf_file)
 
     def parse_file(self, file_path):
 
-        file_ext = os.path.splitext(file_path)[1]
+        file_ext = file_path.split(".")[-1].lower()
 
         file_data = []
-        if file_ext.lower() == '.csv':
+        if file_ext == 'csv':
             file_data = self.parse_csv(file_path)
-        elif file_ext.lower() == '.txt' or file_ext.lower() == '.tsv':
+        elif file_ext in ['txt', 'tsv']:
             file_data = self.parse_tsv(file_path)
-        # elif file_ext.lower() == '.xlsx':
-            # file_data = self.parse_xlsx(file_path)
         else:
-            # 
-            # should treat other cases ??
-            #
             raise NotImplementedError("currently, we can just accept tsv and csv formats")
  
 
@@ -102,6 +97,7 @@ class Sample_conf(object):
         return _file_data
 
     def _link_sources(self, file_path):
+        
         links = []
         link_dst = os.path.abspath(file_path)
         while(1):
@@ -116,7 +112,12 @@ class Sample_conf(object):
                 break
 
         return links
-        
+    
+    def _exists(self, file_path):
+        if self.no_exist_check:
+            return True
+        return os.path.exists(file_path)
+    
     def parse_data(self, _data ):
     
         mode = ''
@@ -197,10 +198,10 @@ class Sample_conf(object):
                 
                 self.fastq_src[sampleID] = []
                 for s in range(len(sequence1)):
-                    if not os.path.exists(sequence1[s]):
+                    if not self._exists(sequence1[s]):
                         err_msg = sampleID + ": " + sequence1[s] +  " does not exists" 
                         raise ValueError(err_msg)
-                    if not os.path.exists(sequence2[s]):
+                    if not self._exists(sequence2[s]):
                         err_msg = sampleID + ": " + sequence2[s] +  " does not exists" 
                         raise ValueError(err_msg)
                     if sequence1[s] == sequence2[s]:
@@ -235,7 +236,7 @@ class Sample_conf(object):
                 self.bam_tofastq_src[sampleID] = []
                 sequences = row[1]
                 for seq in sequences.split(";"):
-                    if not os.path.exists(seq):
+                    if not self._exists(seq):
                         err_msg = sampleID + ": " + seq +  " does not exists"
                         raise ValueError(err_msg)
                     self.bam_tofastq_src[sampleID].append(seq)
@@ -262,15 +263,15 @@ class Sample_conf(object):
                     raise ValueError(err_msg)
 
                 sequence = row[1]
-                if not os.path.exists(sequence):
+                if not self._exists(sequence):
                     err_msg = sampleID + ": " + sequence +  " does not exists"
                     raise ValueError(err_msg)
                 
                 sequence_prefix, ext = os.path.splitext(sequence)
                 sequence_index = ""
-                if os.path.exists(sequence + '.bai'):
+                if self._exists(sequence + '.bai'):
                     sequence_index = sequence + '.bai'
-                elif os.path.exists(sequence_prefix + '.bai'):
+                elif self._exists(sequence_prefix + '.bai'):
                     sequence_index = sequence_prefix + '.bai'
                 else:
                     err_msg = sampleID + ": " + sequence +  " index does not exists"

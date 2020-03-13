@@ -1,0 +1,57 @@
+configfile: "config.yml"
+
+rule all:
+    input:
+        "join/all.txt"
+
+rule bwa:
+    input:
+        r1 = "fastq/{sample}/1_1.fastq",
+        r2 = "fastq/{sample}/1_2.fastq",
+    output:
+        "bam/{sample}/{sample}.markdup.bam"
+    params:
+        script = "script/{sample}/bwa_alignment.sh",
+        yaml = "script/{sample}/conf_bwa_alignment.yml"
+    shell:
+        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+
+rule mutation:
+    input:
+        "bam/{sample}/{sample}.markdup.bam"
+    output:
+        "mutation/{sample}/{sample}.txt"
+    params:
+        script = "script/{sample}/mutation_dummy.sh",
+        yaml = "script/{sample}/conf_mutation_dummy.yml"
+    shell:
+        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+
+rule sv:
+    input:
+        "bam/{sample}/{sample}.markdup.bam"
+    output:
+        "sv/{sample}/{sample}.txt"
+    params:
+        script = "script/{sample}/sv_dummy.sh",
+        yaml = "script/{sample}/conf_sv_dummy.yml"
+    shell:
+        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+
+rule join1:
+    input:
+        "mutation/{sample}/{sample}.txt",
+        "sv/{sample}/{sample}.txt"
+    output:
+        "join/{sample}/{sample}.txt"
+    shell:
+        "cat {input} > {output}"
+
+rule join2:
+    input:
+        expand("join/{sample}/{sample}.txt", sample=config["samples"])
+    output:
+        "join/all.txt"
+    shell:
+        "cat {input} > {output}"
+

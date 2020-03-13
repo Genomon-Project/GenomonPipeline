@@ -1,20 +1,43 @@
 #! /usr/bin/env python
 
-import os, pwd
+import os
+import pwd
+import datetime
 import configparser
 from genomon_pipeline.__init__ import __version__
+
+date_format = "{year:0>4d}-{month:0>2d}-{day:0>2d} {hour:0>2d}:{min:0>2d}:{second:0>2d}"
+timestamp_format = "{year:0>4d}{month:0>2d}{day:0>2d}_{hour:0>2d}{min:0>2d}{second:0>2d}_{msecond:0>6d}"
 
 class Genomon_conf(object):
     """
     class for job related parameters
     """
 
-    def __init__(self, conf, analysis_date):
+    def __init__(self, conf):
             
         self.software_version ={'genomon_pipeline':'genomon_pipeline-'+__version__} 
-        self.analysis_date = analysis_date
         self.genomon_conf = configparser.SafeConfigParser()
         self.genomon_conf.read(conf)
+        
+        now = datetime.datetime.now()
+        self.analysis_date = date_format.format(
+             year = now.year,
+             month = now.month,
+             day = now.day,
+             hour = now.hour,
+             min = now.minute,
+             second = now.second
+        )
+        self.analysis_timestamp = timestamp_format.format(
+             year = now.year,
+             month = now.month,
+             day = now.day,
+             hour = now.hour,
+             min = now.minute,
+             second = now.second,
+             msecond = now.microsecond
+        )
         
     def _conf_check(self, target_section = None, target_option = None):
         err_msg = 'No target File : \'%s\' for the %s key in the section of %s' 
@@ -64,6 +87,16 @@ class Genomon_conf(object):
         print_meta_info = "# Version: " + ' '.join([self.software_version[x] for x in softwares])
         print_meta_info = print_meta_info + '\n' + "# Analysis Date: " + self.analysis_date
         print_meta_info = print_meta_info + '\n' + "# User: " + pwd.getpwuid(os.getuid()).pw_name
-       
         return print_meta_info
 
+    def get(self, section, option):
+        return self.genomon_conf.get(section, option)
+    
+    def safe_get(self, section, option):
+        try:
+            return self.genomon_conf.get(section, option)
+        except Exception:
+            pass
+        return None
+    
+            

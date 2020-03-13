@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-import genomon_pipeline.run
+import genomon_pipeline
+import genomon_pipeline.configure
 import argparse
 
 parser = argparse.ArgumentParser(prog = "genomon_pipeline")
@@ -25,5 +26,5 @@ parser.add_argument("--verbose", help = "write messages to STDERR", default='3',
 
 args = parser.parse_args()
 
-genomon_pipeline.run.main(args)
+genomon_pipeline.configure.main(args)
 

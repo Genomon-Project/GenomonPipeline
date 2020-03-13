@@ -22,11 +22,11 @@ def main(args):
     
     ###
     # set genomon_conf and task parameter config data
-    genomon_conf = gc.Genomon_conf(conf = run_conf.genomon_conf_file, analysis_date = run_conf.analysis_date)
+    genomon_conf = gc.Genomon_conf(conf = run_conf.genomon_conf_file)
     
     if run_conf.analysis_type == "dna":
         #genomon_conf.genomon_conf_check()
         genomon_conf.software_version_set()
         import genomon_pipeline.dna_configure
-        genomon_pipeline.dna_configure.main(genomon_conf = genomon_conf.genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
+        genomon_pipeline.dna_configure.main(genomon_conf = genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
         

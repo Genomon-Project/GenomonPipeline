@@ -1,76 +1,64 @@
 import os
+import shutil
+import pkg_resources
+import yaml
 
-## link the input fastq to project directory
-def link_input_fastq(sample, output_file, genomon_conf, run_conf, sample_conf):
-    fastq_dir = run_conf.project_root + '/fastq/' + sample
-    fastq_prefix, ext = os.path.splitext(sample_conf.fastq[sample][0][0])
-    # Todo
-    # 1. should compare the timestamps between input and linked file
-    # 2. check md5sum ?
-    for (count, fastq_files) in enumerate(sample_conf.fastq[sample][0]):
-        fastq_prefix, ext = os.path.splitext(fastq_files)
-        if not os.path.exists(fastq_dir + '/'+str(count+1)+'_1'+ ext):
-            os.symlink(sample_conf.fastq[sample][0][count], fastq_dir + '/'+str(count+1)+'_1'+ ext)
-        if not os.path.exists(fastq_dir + '/'+str(count+1)+'_2'+ ext):
-            os.symlink(sample_conf.fastq[sample][1][count], fastq_dir + '/'+str(count+1)+'_2'+ ext)
-
-# merge sorted bams into one and mark duplicate reads with biobambam
-def bwa(input_files, output_file, output_dir, genomon_conf, run_conf, sample_conf):
-    import genomon_pipeline.dna_resource.markduplicates  as dr_markduplicates 
-    markduplicates = dr_markduplicates.Markduplicates(genomon_conf.get("markduplicates", "qsub_option"), run_conf.drmaa)
-
-    sample_name = os.path.basename(output_dir)
-
-    output_prefix, ext = os.path.splitext(output_file)
-
-    input_bam_files = ""
-    for input_file in input_files:
-        input_bam_files = input_bam_files + " I=" + input_file
-
-    arguments = {"out_prefix": output_prefix,
-                 "input_bam_files": input_bam_files,
-                 "out_bam": output_file}
+def create_directories(genomon_conf, run_conf, sample_conf):
+    os.makedirs(run_conf.project_root + '/config/', exist_ok=True)
+    genomon_conf_name, genomon_conf_ext = os.path.splitext(os.path.basename(run_conf.genomon_conf_file))
+    sample_conf_name, sample_conf_ext = os.path.splitext(os.path.basename(run_conf.sample_conf_file))
+    shutil.copyfile(run_conf.genomon_conf_file, run_conf.project_root + '/config/' + genomon_conf_name +'_'+ genomon_conf.analysis_timestamp + genomon_conf_ext)
+    shutil.copyfile(run_conf.sample_conf_file, run_conf.project_root + '/config/' + sample_conf_name +'_'+ genomon_conf.analysis_timestamp + sample_conf_ext)
+    shutil.copyfile(pkg_resources.resource_filename('genomon_pipeline', 'data/snakefile'), run_conf.project_root + '/snakefile')
     
-    singularity_params = {
-        "image": genomon_conf.get("markduplicates", "image"),
-        "option": genomon_conf.get("markduplicates", "singularity_option"),
-        "bind": [run_conf.project_root],
-    }
+    samples = []
+    for target_sample_dict in (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq):
+        for sample in target_sample_dict:
+            os.makedirs(run_conf.project_root + '/log/' + sample, exist_ok=True)
+            samples.append(sample)
+    
+    open(run_conf.project_root + "/config.yml", "w").write(yaml.dump({
+            "samples": samples
+        }))
+    
+# link the input fastq to project directory
+def link_input_fastq(genomon_conf, run_conf, sample_conf):
+    for sample in sample_conf.fastq:
+        fastq_dir = run_conf.project_root + '/fastq/' + sample
+        os.makedirs(run_conf.project_root + '/fastq/' + sample, exist_ok=True)
         
-    markduplicates.task_exec(
-            arguments, run_conf.project_root + '/log/' + sample_name , 
-            run_conf.project_root + '/script/'+ sample_name, singularity_params)
+        for (count, fastq_files) in enumerate(sample_conf.fastq[sample][0]):
+            fastq_prefix, ext = os.path.splitext(fastq_files)
+            ext = ".fastq"
+            if not os.path.exists(fastq_dir + '/'+str(count+1)+'_1'+ ext):
+                os.symlink(sample_conf.fastq[sample][0][count], fastq_dir + '/'+str(count+1)+'_1'+ ext)
+            if not os.path.exists(fastq_dir + '/'+str(count+1)+'_2'+ ext):
+                os.symlink(sample_conf.fastq[sample][1][count], fastq_dir + '/'+str(count+1)+'_2'+ ext)
 
-    for input_file in input_files:
-        os.unlink(input_file)
-        os.unlink(input_file + ".bai")
+# link the import bam to project directory
+def link_import_bam(genomon_conf, run_conf, sample_conf):
+    for sample in sample_conf.bam_import:
+        bam = sample_conf.bam_import[sample]
+        link_dir = run_conf.project_root + '/bam/' + sample
+        os.makedirs(link_dir, exist_ok=True)
+        bam_prefix, ext = os.path.splitext(bam)
+        
+        if (not os.path.exists(link_dir +'/'+ sample +'.markdup.bam')) and (not os.path.exists(link_dir +'/'+ sample +'.markdup.bam.bai')): 
+            os.symlink(bam, link_dir +'/'+ sample +'.markdup.bam')
+            if (os.path.exists(bam +'.bai')):
+                os.symlink(bam +'.bai', link_dir +'/'+ sample +'.markdup.bam.bai')
+            elif (os.path.exists(bam_prefix +'.bai')):
+                os.symlink(bam_prefix +'.bai', link_dir +'/'+ sample +'.markdup.bam.bai')
 
 def main(genomon_conf, run_conf, sample_conf):
+ 
+    create_directories(genomon_conf, run_conf, sample_conf)
+    link_input_fastq(genomon_conf, run_conf, sample_conf)
+    link_import_bam(genomon_conf, run_conf, sample_conf)
     
-    # generate output list of 'linked fastq'
-    linked_fastq_list = []
-    for sample in sample_conf.fastq:
-        if os.path.exists(run_conf.project_root + '/bam/' + sample + '/1.sorted.bam'): continue
-        if os.path.exists(run_conf.project_root + '/bam/' + sample + '/' + sample + '.markdup.bam'): continue
+    import genomon_pipeline.resource.bwa_align
+    output_bams = genomon_pipeline.resource.bwa_align.configure(genomon_conf, run_conf, sample_conf)
     
-        link_fastq_arr1 = []
-        link_fastq_arr2 = []
-        for (count, fastq_file) in enumerate(sample_conf.fastq[sample][0]):
-            fastq_prefix, ext = os.path.splitext(fastq_file)
-            link_fastq_arr1.append(run_conf.project_root + '/fastq/' + sample + '/' + str(count+1) + '_1' + ext)
-            link_fastq_arr2.append(run_conf.project_root + '/fastq/' + sample + '/' + str(count+1) + '_2' + ext)
-        #linked_fastq_list.append([link_fastq_arr1,link_fastq_arr2])
-        link_input_fastq(sample, [link_fastq_arr1,link_fastq_arr2], genomon_conf, run_conf, sample_conf)
-        
-    # generate output list of 'bam2fastq'
-    bam2fastq_output_list = []
-    for sample in sample_conf.bam_tofastq:
-        if os.path.exists(run_conf.project_root + '/bam/' + sample + '/1.sorted.bam'): continue
-        if os.path.exists(run_conf.project_root + '/bam/' + sample + '/' + sample + '.markdup.bam'): continue
-        bam2fastq_arr1 = []
-        bam2fastq_arr2 = []
-        bam2fastq_arr1.append(run_conf.project_root + '/fastq/' + sample + '/1_1.fastq')
-        bam2fastq_arr2.append(run_conf.project_root + '/fastq/' + sample + '/1_2.fastq')
-        bam2fastq_output_list.append([bam2fastq_arr1,bam2fastq_arr2])
-    
+    import genomon_pipeline.resource.mutation_dummy
+    genomon_pipeline.resource.mutation_dummy.configure(output_bams, genomon_conf, run_conf, sample_conf)
    
