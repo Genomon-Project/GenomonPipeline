@@ -12,7 +12,7 @@ class Stage_task(object):
     
     def __init__(self, params):
         self.script_dir = "%s/script" % (os.path.abspath(params["work_dir"]))
-        self.shell_script_name = "%s.sh" % (params["stage_name"])
+        self.shell_script_name = "shell_%s.sh" % (params["stage_name"])
         self.singurality_script_name = "singularity_%s.sh" % (params["stage_name"])
         self.snakemake_conf_name = "conf_%s.yml" % (params["stage_name"])
         

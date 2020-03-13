@@ -5,7 +5,7 @@ import genomon_pipeline.stage_task_abc as stage_task
 class Mutation_dummy(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)
-        self.script_template = """
+        self.shell_script_template = """
 #!/bin/bash
 #
 # Set SGE

@@ -5,7 +5,7 @@ import genomon_pipeline.stage_task_abc as stage_task
 class Bwa_align(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)
-        self.script_template = """
+        self.shell_script_template = """
 #!/bin/bash
 #
 # Set SGE
@@ -26,22 +26,22 @@ REFERENCE={REFERENCE_DIR}/{REFERENCE_FILE}
 mkdir -p {OUTPUT_DIR}
 
 /tools/bwa-0.7.17/bwa mem \
-    {BWA_OPTION} \
-    {REFERENCE} \
-    {FASTQ1} \
-    {FASTQ2} \
+  {BWA_OPTION} \
+  ${{REFERENCE}} \
+  {FASTQ1} \
+  {FASTQ2} \
 | /usr/local/bin/bamsort \
-    {BAMSORT_OPTION} \
-    calmdnmreference={REFERENCE} \
-    inputformat=sam \
-    indexfilename=${{OUTPUT_PREF}}.sorted.bam.bai \
-    O=${{OUTPUT_PREF}.sorted.bam
+  {BAMSORT_OPTION} \
+  calmdnmreference=${{REFERENCE}} \
+  inputformat=sam \
+  indexfilename=${{OUTPUT_PREF}}.sorted.bam.bai \
+  O=${{OUTPUT_PREF}}.sorted.bam
 
 /usr/local/bin/bammarkduplicates \
-    {BAMMARKDUP_OPTION} \
-    M=${{OUTPUT_PREF}}.metrics \
-    I=${{OUTPUT_PREF}}.sorted.bam \
-    O=${{OUTPUT_PREF}}.markdup.bam
+  {BAMMARKDUP_OPTION} \
+  M=${{OUTPUT_PREF}}.metrics \
+  I=${{OUTPUT_PREF}}.sorted.bam \
+  O=${{OUTPUT_PREF}}.markdup.bam
 
 rm ${{OUTPUT_PREF}}.sorted.bam
 rm ${{OUTPUT_PREF}}.sorted.bam.bai

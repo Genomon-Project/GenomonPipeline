@@ -11,7 +11,7 @@ rule bwa:
     output:
         "bam/{sample}/{sample}.markdup.bam"
     params:
-        script = "script/{sample}/bwa_alignment.sh",
+        script = "script/{sample}/shell_bwa_alignment.sh",
         yaml = "script/{sample}/conf_bwa_alignment.yml"
     shell:
         "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
@@ -22,7 +22,7 @@ rule mutation:
     output:
         "mutation/{sample}/{sample}.txt"
     params:
-        script = "script/{sample}/mutation_dummy.sh",
+        script = "script/{sample}/shell_mutation_dummy.sh",
         yaml = "script/{sample}/conf_mutation_dummy.yml"
     shell:
         "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
@@ -33,7 +33,7 @@ rule sv:
     output:
         "sv/{sample}/{sample}.txt"
     params:
-        script = "script/{sample}/sv_dummy.sh",
+        script = "script/{sample}/shell_sv_dummy.sh",
         yaml = "script/{sample}/conf_sv_dummy.yml"
     shell:
         "echo 'genomon_runner {params.script} {params.yaml}' > {output}"

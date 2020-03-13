@@ -61,4 +61,6 @@ def main(genomon_conf, run_conf, sample_conf):
     
     import genomon_pipeline.resource.mutation_dummy
     genomon_pipeline.resource.mutation_dummy.configure(output_bams, genomon_conf, run_conf, sample_conf)
-   
+
+    import genomon_pipeline.resource.sv_dummy
+    genomon_pipeline.resource.sv_dummy.configure(output_bams, genomon_conf, run_conf, sample_conf)
