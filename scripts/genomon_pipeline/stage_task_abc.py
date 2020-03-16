@@ -37,7 +37,7 @@ set -o pipefail
 singularity exec {option} --bind {bind} {image} /bin/bash {script}
 """
         
-    def write_script(self, arguments, singularity_bind, sample = "", max_task = 0):
+    def write_script(self, arguments, singularity_bind, run_conf, sample = "", max_task = 0):
         output_dir = self.script_dir
         log_dir = self.log_dir
         if sample != "":
@@ -61,6 +61,8 @@ singularity exec {option} --bind {bind} {image} /bin/bash {script}
         open(conf_path, "w").write(yaml.dump({
             "qsub_option": self.qsub_option,
             "log_dir": log_dir,
+            "drmaa": run_conf.drmaa,
+            "retry_count": run_conf.retry_count,
             "max_task": max_task
         }))
         

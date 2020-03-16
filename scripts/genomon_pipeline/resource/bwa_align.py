@@ -81,5 +81,5 @@ def configure(genomon_conf, run_conf, sample_conf):
             genomon_conf.get("bwa_alignment", "bwa_reference_dir"),
         ] + sample_conf.fastq_src[sample]
         
-        stage_class.write_script(arguments, singularity_bind, sample = sample)
+        stage_class.write_script(arguments, singularity_bind, run_conf, sample = sample)
     return output_bams

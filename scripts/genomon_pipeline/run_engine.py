@@ -104,9 +104,9 @@ def main(args):
     import yaml
     conf = yaml.safe_load(open(args.conf))
     
-    if args.drmaa:
-        runner = Drmaa_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], args.retry_count)
+    if conf["drmaa"]:
+        runner = Drmaa_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], conf["retry_count"])
     else:
-        runner = Qsub_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], args.retry_count)
+        runner = Qsub_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], conf["retry_count"])
         
     runner.task_exec()

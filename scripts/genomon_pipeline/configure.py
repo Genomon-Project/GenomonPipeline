@@ -15,7 +15,8 @@ def main(args):
     run_conf.project_root = os.path.abspath(args.project_root)
     run_conf.genomon_conf_file = args.genomon_conf_file
     run_conf.drmaa = False if args.disable_drmaa else True
-
+    run_conf.retry_count = args.retry_count
+    
     ###
     # read sample list file
     sample_conf = sc.Sample_conf(run_conf.sample_conf_file)

@@ -14,42 +14,33 @@ rule bwa:
         script = "script/{sample}/singularity_bwa_alignment.sh",
         yaml = "script/{sample}/conf_bwa_alignment.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "genomon_runner {params.script} {params.yaml}"
 
 rule mutation:
     input:
-        "bam/{sample}/{sample}.markdup.bam"
+        lambda wildcards: config["mutation_samples"][wildcards.sample],
     output:
         "mutation/{sample}/{sample}.txt"
     params:
         script = "script/{sample}/singularity_mutation_dummy.sh",
         yaml = "script/{sample}/conf_mutation_dummy.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "genomon_runner {params.script} {params.yaml}"
 
 rule sv:
     input:
-        "bam/{sample}/{sample}.markdup.bam"
+        lambda wildcards: config["sv_samples"][wildcards.sample]
     output:
         "sv/{sample}/{sample}.txt"
     params:
         script = "script/{sample}/singularity_sv_dummy.sh",
         yaml = "script/{sample}/conf_sv_dummy.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "genomon_runner {params.script} {params.yaml}"
 
-rule join1:
+rule join:
     input:
-        "mutation/{sample}/{sample}.txt",
-        "sv/{sample}/{sample}.txt"
-    output:
-        "join/{sample}/{sample}.txt"
-    shell:
-        "cat {input} > {output}"
-
-rule join2:
-    input:
-        expand("join/{sample}/{sample}.txt", sample=config["samples"])
+        ["{dataset}".format(dataset=dataset) for dataset in config["output_files"]]
     output:
         "join/all.txt"
     shell:

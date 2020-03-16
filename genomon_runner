@@ -10,8 +10,6 @@ parser.add_argument("--version", action = "version", version = "genomon_runner-"
 
 parser.add_argument('script', metavar = "/path/to/singularity_bwa.sh", type = str, help = "input singularity script")
 parser.add_argument("conf", metavar = "/path/to/sample.conf.yml", type = str, help = "input sample list flie [YAML]")
-parser.add_argument("--drmaa", help = "with drmaa", action='store_true')
-parser.add_argument("--retry_count", help = "retry count", type = int, default=0)
 parser.set_defaults(handler=genomon_pipeline.run_engine.main)
 
 args = parser.parse_args()

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import genomon_pipeline.stage_task_abc as stage_task
 
 class Mutation_dummy(stage_task.Stage_task):
@@ -25,7 +26,7 @@ samtools view -H {INPUT_BAM} > {OUTPUT_DIR}/{SAMPLE}.txt
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
-def configure(output_bams, genomon_conf, run_conf, sample_conf):
+def configure(input_bams, genomon_conf, run_conf, sample_conf):
     params = {
         "work_dir": run_conf.project_root,
         "stage_name": "mutation_dummy",
@@ -35,16 +36,17 @@ def configure(output_bams, genomon_conf, run_conf, sample_conf):
     }
     stage_class = Mutation_dummy(params)
     
-    for sample in output_bams:
+    for (sample, control, control_panel) in sample_conf.mutation_call:
         output_dir = "%s/mutation/%s" % (run_conf.project_root, sample)
     
         arguments = {
             "SAMPLE": sample,
-            "INPUT_BAM": output_bams[sample],
+            "INPUT_BAM": input_bams[sample],
             "OUTPUT_DIR": output_dir,
         }
        
         singularity_bind = [run_conf.project_root]
         if sample in sample_conf.bam_import_src:
             singularity_bind += sample_conf.bam_import_src[sample]
-        stage_class.write_script(arguments, singularity_bind, sample = sample)
+            
+        stage_class.write_script(arguments, singularity_bind, run_conf, sample = sample)
