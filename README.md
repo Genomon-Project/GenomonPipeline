@@ -7,6 +7,10 @@ http://genomon-project.github.io/GenomonPages/
 
 ## Setup
 
+0. Precondition
+
+Make DRMAA and singularity available beforehand.
+
 1. Install
 
 ```
