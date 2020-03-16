@@ -56,3 +56,20 @@ genomon_pipeline dna ./test/5929_sample.csv ${output_dir} ./test/dna_genomon.cfg
 cd ${output_dir}
 snakemake
 ```
+
+case, dry-run
+```
+snakemake -n
+```
+
+case, re-run (force all)
+```
+snakemake --forceall
+```
+
+case, with dot
+```
+snakemake --forceall --dag | dot -Tpng > dag.png
+```
+
+![](./dag.png)
