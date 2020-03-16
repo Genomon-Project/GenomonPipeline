@@ -5,3 +5,50 @@ GenomonPipeline, a cancer genome and RNA sequencing data analysis pipeline, effi
 ## Manual
 http://genomon-project.github.io/GenomonPages/
 
+## Setup
+
+1. Install
+
+```
+virtualenv -p python3 ~/venv/genomon_snakemake
+source ~/venv/genomon_snakemake/bin/activate
+git clone -b snakemake https://github.com/Genomon-Project/GenomonPipeline.git GenomonPipeline_snakemake
+cd GenomonPipeline_snakemake
+python setup.py install
+pip install snakemake pyyaml drmaa
+```
+
+2. Edit sample.csv
+
+Edit pathes of sequence files.
+```
+vi ./test/5929_sample.csv
+```
+
+3. Pull container images
+
+```
+singularity pull docker://genomon/bwa_alignment:0.2.0
+```
+
+4. Edit config file
+
+Edit `image` options, to pulled `.simg`.
+And edit pathes of reference files.
+```
+vi ./test/dna_genomon.cfg
+```
+
+## How to use
+
+1. Configure
+
+```
+genomon_pipeline dna ./test/5929_sample.csv ${output_dir} ./test/dna_genomon.cfg
+```
+
+2. `snakemake`
+```
+cd ${output_dir}
+snakemake
+```
