@@ -44,7 +44,8 @@ def configure(output_bams, genomon_conf, run_conf, sample_conf):
             "OUTPUT_DIR": output_dir,
         }
        
-        singularity_bind = [
-            run_conf.project_root,
-        ]
+        singularity_bind = [run_conf.project_root]
+        if sample in sample_conf.bam_import_src:
+            singularity_bind += sample_conf.bam_import_src[sample]
+
         stage_class.write_script(arguments, singularity_bind, sample = sample)

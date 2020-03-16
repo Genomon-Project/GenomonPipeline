@@ -61,7 +61,7 @@ def configure(genomon_conf, run_conf, sample_conf):
     output_bams = {}
     for sample in sample_conf.fastq:
         output_dir = "%s/bam/%s" % (run_conf.project_root, sample)
-        output_bams[sample] = "%s/bam/%s/%s.markdup.bam"
+        output_bams[sample] = "%s/%s.markdup.bam" % (output_dir, sample)
         
         arguments = {
             "SAMPLE": sample,

@@ -39,10 +39,13 @@ singularity exec {option} --bind {bind} {image} /bin/bash {script}
         
     def write_script(self, arguments, singularity_bind, sample = "", max_task = 0):
         output_dir = self.script_dir
+        log_dir = self.log_dir
         if sample != "":
             output_dir = "%s/%s" % (self.script_dir, sample)
+            log_dir  = "%s/%s" % (self.log_dir, sample)
         os.makedirs(output_dir, exist_ok=True)
-    
+        os.makedirs(log_dir, exist_ok=True)
+
         shell_script_path = "%s/%s" % (output_dir, self.shell_script_name)
         open(shell_script_path, 'w').write(self.shell_script_template.format(**arguments))
         
@@ -57,7 +60,7 @@ singularity exec {option} --bind {bind} {image} /bin/bash {script}
         conf_path = "%s/%s" % (output_dir, self.snakemake_conf_name)
         open(conf_path, "w").write(yaml.dump({
             "qsub_option": self.qsub_option,
-            "log_dir": self.log_dir,
+            "log_dir": log_dir,
             "max_task": max_task
         }))
         

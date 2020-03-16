@@ -6,11 +6,12 @@ import subprocess
 import stat
 
 class Runner(object):
-    def __init__(self, singularity_script, qsub_option, log_dir, max_task):
+    def __init__(self, singularity_script, qsub_option, log_dir, max_task, retry_count):
         self.qsub_option = qsub_option
-        self.retry_count = 2
-        self.singularity_script = singularity_script
-        self.log_dir = log_dir
+        #self.retry_count = 2
+        self.retry_count = retry_count
+        self.singularity_script = os.path.abspath(singularity_script)
+        self.log_dir = os.path.abspath(log_dir)
         self.max_task = max_task
         
     def task_exec(self):
@@ -101,11 +102,11 @@ class Qsub_runner(Runner):
 
 def main(args):
     import yaml
-    conf = yaml.load(open(args.conf))
+    conf = yaml.safe_load(open(args.conf))
     
     if args.drmaa:
-        runner = Drmaa_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"])
+        runner = Drmaa_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], args.retry_count)
     else:
-        runner = Qsub_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"])
+        runner = Qsub_runner(args.script, conf["qsub_option"], conf["log_dir"], conf["max_task"], args.retry_count)
         
     runner.task_exec()

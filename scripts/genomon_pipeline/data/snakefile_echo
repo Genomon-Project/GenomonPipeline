@@ -14,7 +14,7 @@ rule bwa:
         script = "script/{sample}/singularity_bwa_alignment.sh",
         yaml = "script/{sample}/conf_bwa_alignment.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "echo 'genomon_runner {params.script} {params.yaml} --drmaa' > {output}"
 
 rule mutation:
     input:
@@ -25,7 +25,7 @@ rule mutation:
         script = "script/{sample}/singularity_mutation_dummy.sh",
         yaml = "script/{sample}/conf_mutation_dummy.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "echo 'genomon_runner {params.script} {params.yaml} --drmaa' > {output}"
 
 rule sv:
     input:
@@ -36,7 +36,7 @@ rule sv:
         script = "script/{sample}/singularity_sv_dummy.sh",
         yaml = "script/{sample}/conf_sv_dummy.yml"
     shell:
-        "genomon_runner {params.script} {params.yaml} --drmaa"
+        "echo 'genomon_runner {params.script} {params.yaml} --drmaa' > {output}"
 
 rule join1:
     input:

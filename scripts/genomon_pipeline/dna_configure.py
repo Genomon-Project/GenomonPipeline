@@ -37,27 +37,30 @@ def link_input_fastq(genomon_conf, run_conf, sample_conf):
 
 # link the import bam to project directory
 def link_import_bam(genomon_conf, run_conf, sample_conf):
+    linked_bam = {}
     for sample in sample_conf.bam_import:
         bam = sample_conf.bam_import[sample]
         link_dir = run_conf.project_root + '/bam/' + sample
         os.makedirs(link_dir, exist_ok=True)
         bam_prefix, ext = os.path.splitext(bam)
-        
+        linked_bam[sample] = link_dir +'/'+ sample +'.markdup.bam'
+
         if (not os.path.exists(link_dir +'/'+ sample +'.markdup.bam')) and (not os.path.exists(link_dir +'/'+ sample +'.markdup.bam.bai')): 
             os.symlink(bam, link_dir +'/'+ sample +'.markdup.bam')
             if (os.path.exists(bam +'.bai')):
                 os.symlink(bam +'.bai', link_dir +'/'+ sample +'.markdup.bam.bai')
             elif (os.path.exists(bam_prefix +'.bai')):
                 os.symlink(bam_prefix +'.bai', link_dir +'/'+ sample +'.markdup.bam.bai')
+    return linked_bam
 
 def main(genomon_conf, run_conf, sample_conf):
  
     create_directories(genomon_conf, run_conf, sample_conf)
     link_input_fastq(genomon_conf, run_conf, sample_conf)
-    link_import_bam(genomon_conf, run_conf, sample_conf)
+    output_bams = link_import_bam(genomon_conf, run_conf, sample_conf)
     
     import genomon_pipeline.resource.bwa_align
-    output_bams = genomon_pipeline.resource.bwa_align.configure(genomon_conf, run_conf, sample_conf)
+    output_bams.update(genomon_pipeline.resource.bwa_align.configure(genomon_conf, run_conf, sample_conf))
     
     import genomon_pipeline.resource.mutation_dummy
     genomon_pipeline.resource.mutation_dummy.configure(output_bams, genomon_conf, run_conf, sample_conf)
