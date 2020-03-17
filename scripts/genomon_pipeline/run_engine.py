@@ -8,9 +8,9 @@ import stat
 class Runner(object):
     def __init__(self, singularity_script, qsub_option, log_dir, max_task, retry_count):
         self.qsub_option = qsub_option
-        #self.retry_count = 2
         self.retry_count = retry_count
         self.singularity_script = os.path.abspath(singularity_script)
+        self.jobname = os.path.basename(self.singularity_script).replace(".sh", "").replace("singularity_", "")
         self.log_dir = os.path.abspath(log_dir)
         self.max_task = max_task
         
@@ -24,9 +24,9 @@ class Drmaa_runner(Runner):
         
             s = drmaa.Session()
             s.initialize()
-        
+             
             jt = s.createJobTemplate()
-            jt.jobName = os.path.basename(self.singularity_script).replace(".sh", "")
+            jt.jobName = self.jobname
             jt.outputPath = ':' + self.log_dir
             jt.errorPath = ':' + self.log_dir
             jt.nativeSpecification = self.qsub_option
@@ -90,7 +90,7 @@ class Drmaa_runner(Runner):
 
 class Qsub_runner(Runner):
     def task_exec(self):
-        qsub_commands = ['qsub', '-sync', 'yes']
+        qsub_commands = ['qsub', '-sync', 'yes', '-N', self.jobname]
         if self.max_task != 0:
             qsub_commands.extend(['-t', '1-'+str(self.max_task)+':1'])
 
