@@ -2,3 +2,4 @@ build
 dist
 *.pyc
 /.ruffus_history.sqlite
+/scripts/genomon_pipeline.egg-info

@@ -17,7 +17,7 @@ def create_directories(genomon_conf, run_conf, sample_conf, snakefile_name):
     shutil.copyfile(run_conf.sample_conf_file, run_conf.project_root + '/config/' + sample_conf_name +'_'+ genomon_conf.analysis_timestamp + sample_conf_ext)
     
     # copy snakemake
-    shutil.copyfile(pkg_resources.resource_filename('genomon_pipeline', 'data/' + snakefile_name), run_conf.project_root + '/snakefile')
+    shutil.copyfile(pkg_resources.resource_filename('genomon_pipeline', snakefile_name), run_conf.project_root + '/snakefile')
     
     # mkdir loag
     for target_sample_dict in (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq):
@@ -47,10 +47,11 @@ def link_import_bam(genomon_conf, run_conf, sample_conf, bam_prefix, bai_prefix)
         bam = sample_conf.bam_import[sample]
         link_dir = run_conf.project_root + '/bam/' + sample
         os.makedirs(link_dir, exist_ok=True)
-        bam_prefix, ext = os.path.splitext(bam)
+        prefix, ext = os.path.splitext(bam)
         linked_bam[sample] = link_dir +'/'+ sample + bam_prefix
 
         if (not os.path.exists(link_dir +'/'+ sample + bam_prefix)) and (not os.path.exists(link_dir +'/'+ sample + bai_prefix)): 
+            print([link_dir,sample, bam_prefix])
             os.symlink(bam, link_dir +'/'+ sample + bam_prefix)
             if (os.path.exists(bam +'.bai')):
                 os.symlink(bam +'.bai', link_dir +'/'+ sample + bai_prefix)

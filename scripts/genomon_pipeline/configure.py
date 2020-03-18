@@ -1,9 +1,8 @@
 #! /usr/bin/env python
 
 import os
-import genomon_pipeline.config.genomon_conf as gc
-import genomon_pipeline.config.run_conf as rc
-import genomon_pipeline.config.sample_conf as sc
+import genomon_pipeline.core.genomon_conf as gc
+import genomon_pipeline.core.run_conf as rc
 
 def main(args):
 
@@ -18,16 +17,14 @@ def main(args):
     run_conf.retry_count = args.retry_count
     
     ###
-    # read sample list file
-    sample_conf = sc.Sample_conf(run_conf.sample_conf_file)
-    
-    ###
     # set genomon_conf and task parameter config data
     genomon_conf = gc.Genomon_conf(conf = run_conf.genomon_conf_file)
+    genomon_conf.software_version_set()
     
     if run_conf.analysis_type == "dna":
-        #genomon_conf.genomon_conf_check()
-        genomon_conf.software_version_set()
-        import genomon_pipeline.dna_configure
-        genomon_pipeline.dna_configure.main(genomon_conf = genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
+        import genomon_pipeline.dna.sample_conf as sc
+        import genomon_pipeline.dna.configure as configure
         
+    sample_conf = sc.Sample_conf(run_conf.sample_conf_file)
+    configure.main(genomon_conf = genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
+
