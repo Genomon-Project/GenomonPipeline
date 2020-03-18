@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import os
 import genomon_pipeline.stage_task_abc as stage_task
 
 class Mutation_dummy(stage_task.Stage_task):

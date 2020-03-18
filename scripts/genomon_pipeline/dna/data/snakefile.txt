@@ -6,15 +6,14 @@ rule all:
 
 rule bwa:
     input:
-        r1 = "fastq/{sample}/1_1.fastq",
-        r2 = "fastq/{sample}/1_2.fastq",
+        "fastq/{sample}/{sample}.txt"
     output:
         "bam/{sample}/{sample}.markdup.bam"
     params:
         script = "script/{sample}/singularity_bwa_alignment.sh",
         yaml = "script/{sample}/conf_bwa_alignment.yml"
     shell:
-        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+        "genomon_runner {params.script} {params.yaml}"
 
 rule mutation:
     input:
@@ -25,7 +24,7 @@ rule mutation:
         script = "script/{sample}/singularity_mutation_dummy.sh",
         yaml = "script/{sample}/conf_mutation_dummy.yml"
     shell:
-        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+        "genomon_runner {params.script} {params.yaml}"
 
 rule sv:
     input:
@@ -36,7 +35,7 @@ rule sv:
         script = "script/{sample}/singularity_sv_dummy.sh",
         yaml = "script/{sample}/conf_sv_dummy.yml"
     shell:
-        "echo 'genomon_runner {params.script} {params.yaml}' > {output}"
+        "genomon_runner {params.script} {params.yaml}"
 
 rule join:
     input:
