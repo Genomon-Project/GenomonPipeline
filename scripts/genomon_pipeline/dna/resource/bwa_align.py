@@ -28,8 +28,8 @@ mkdir -p {OUTPUT_DIR}
 /tools/bwa-0.7.17/bwa mem \
   {BWA_OPTION} \
   {REFERENCE} \
-  {FASTQ1} \
-  {FASTQ2} \
+  '<cat {FASTQ1}' \
+  '<cat {FASTQ2}' \
 | /usr/local/bin/bamsort \
   {BAMSORT_OPTION} \
   calmdnmreference={REFERENCE} \
@@ -69,8 +69,8 @@ def configure(genomon_conf, run_conf, sample_conf):
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": sample_conf.fastq[sample],
-            "FASTQ1": sample_conf.fastq[sample][0][0],
-            "FASTQ2": sample_conf.fastq[sample][1][0],
+            "FASTQ1": " ".join(sample_conf.fastq[sample][0]),
+            "FASTQ2": " ".join(sample_conf.fastq[sample][1]),
             "OUTPUT_DIR": output_dir,
             "REFERENCE": genomon_conf.path_get(CONF_SECTION, "bwa_reference"),
             "BWA_OPTION": genomon_conf.get(CONF_SECTION, "bwa_option"),
