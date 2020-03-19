@@ -7,11 +7,13 @@ Created on Tue Jun 28 13:18:34 2016
 """
 
 import os
+import sys
 import shutil
 import unittest
 import subprocess
+import snakemake
 
-class SampleSheetTest(unittest.TestCase):
+class ConfigureTest(unittest.TestCase):
     
     SAMPLE_DIR = "/tmp/genomon_test_dna_configure/"
     REMOVE = False
@@ -134,7 +136,10 @@ singularity_option =
             self.SAMPLE_DIR + self.GC_NAME,
         ]
         subprocess.check_call(['python', 'genomon_pipeline'] + options)
-    
+        success = snakemake.snakemake(self.SAMPLE_DIR + 'drmaa/snakefile', workdir = self.SAMPLE_DIR + 'drmaa', dryrun = True)
+        self.assertTrue(success)
+
+    """
     def test2_02_configure(self):
         options = [
             "dna",
@@ -143,11 +148,213 @@ singularity_option =
             self.SAMPLE_DIR + self.GC_NAME,
             "--disable_drmaa",
         ]
-        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        self.assertTrue(success)
+    """
 
-    def test3_01_dryrun(self):
-        import snakemake
-        snakemake.snakemake(self.SAMPLE_DIR + 'drmaa/snakefile', workdir = self.SAMPLE_DIR + 'drmaa', dryrun = True)
+    def test3_01_bwa_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[fastq]
+A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test3_02_bwa_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_tofastq]
+A_tumor,{sample_dir}A.markdup.bam
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test3_03_bwa_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_import]
+A_tumor,{sample_dir}A.markdup.bam
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+
+    def test4_01_mutation_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[fastq]
+A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq
+[mutation_call]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test4_02_mutation_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_tofastq]
+A_tumor,{sample_dir}A.markdup.bam
+[mutation_call]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test4_03_mutation_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_import]
+A_tumor,{sample_dir}A.markdup.bam
+[mutation_call]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+
+    def test5_01_sv_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[fastq]
+A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq
+[sv_detection]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test5_02_sv_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_tofastq]
+A_tumor,{sample_dir}A.markdup.bam
+[sv_detection]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
+    def test5_03_sv_limited(self):
+        wdir = self.SAMPLE_DIR + sys._getframe().f_code.co_name
+        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+
+        data_sample = """[bam_import]
+A_tumor,{sample_dir}A.markdup.bam
+[sv_detection]
+A_tumor,None,None
+""".format(sample_dir = self.SAMPLE_DIR)
+        
+        f = open(ss_path, "w")
+        f.write(data_sample)
+        f.close()
+        options = [
+            "dna",
+            ss_path,
+            wdir,
+            self.SAMPLE_DIR + self.GC_NAME,
+        ]
+        subprocess.check_call(['python', 'genomon_pipeline'] + options)
+        success = snakemake.snakemake(wdir + '/snakefile', workdir = wdir, dryrun = True)
+        self.assertTrue(success)
+
 
 if __name__ == '__main__':
     unittest.main()

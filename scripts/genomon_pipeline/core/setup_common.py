@@ -50,13 +50,14 @@ def link_input_fastq(genomon_conf, run_conf, sample_conf):
             fastq_prefix, ext = os.path.splitext(fastq_files)
             r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
             r2 = fastq_dir + '/'+str(count+1)+'_2'+ ext
-            linked_fastq[sample]["fastq"][0] += r1
-            linked_fastq[sample]["fastq"][1] += r2
+            linked_fastq[sample]["fastq"][0] += [r1]
+            linked_fastq[sample]["fastq"][1] += [r2]
 
             if not os.path.exists(r1):
                 os.symlink(sample_conf.fastq[sample][0][count], r1)
             if not os.path.exists(r2):
                 os.symlink(sample_conf.fastq[sample][1][count], r2)
+
     return linked_fastq
 
 # link the import bam to project directory
@@ -77,3 +78,27 @@ def link_import_bam(genomon_conf, run_conf, sample_conf, bam_prefix, bai_prefix)
                 os.symlink(bam_prefix +'.bai', link_dir +'/'+ sample + bai_prefix)
     return linked_bam
 
+
+def dump_yaml_input_section(genomon_conf, run_conf, sample_conf):
+    samples = []
+    outputs =[]
+    for sample in sample_conf.bam_tofastq:
+        samples.append(sample)
+        outputs.append("fastq/{sample}/1_1.fastq".format(sample = sample))
+        outputs.append("fastq/{sample}/1_2.fastq".format(sample = sample))
+
+    input_bwa = {}
+    for sample in sample_conf.fastq:
+        input_bwa[sample] = "fastq/%s/%s" % (sample, sample_conf.fastq[sample][0][0].split("/")[-1])
+        input_bwa[sample] = "fastq/%s/%s" % (sample, sample_conf.fastq[sample][1][0].split("/")[-1])
+        outputs.append("bam/{sample}/{sample}.markdup.bam".format(sample = sample))
+    
+    for sample in sample_conf.bam_import:
+        input_bwa[sample] = "fastq/%s/1_1.fastq" % (sample)
+        input_bwa[sample] = "fastq/%s/1_2.fastq" % (sample)
+    
+    return {
+        "samples": samples,
+        "bwa_samples": input_bwa,
+        "output_files": outputs
+    }

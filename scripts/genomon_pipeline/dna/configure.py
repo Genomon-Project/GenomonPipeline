@@ -1,37 +1,25 @@
 #! /usr/bin/env python
 
 def dump_conf_yaml(genomon_conf, run_conf, sample_conf):
-    samples = []
-    outputs =[]
-    for sample in sample_conf.bam_tofastq:
-        samples.append(sample)
-        outputs.append("fastq/{sample}/1_1.fastq".format(sample = sample))
-        outputs.append("fastq/{sample}/1_2.fastq".format(sample = sample))
-
-    input_bwa = {}
-    for sample in sample_conf.fastq:
-        input_bwa[sample] = "fastq/%s/%s" % (sample, sample_conf.fastq[sample][0][0].split("/")[-1])
-        input_bwa[sample] = "fastq/%s/%s" % (sample, sample_conf.fastq[sample][1][0].split("/")[-1])
-        outputs.append("bam/{sample}/{sample}.markdup.bam".format(sample = sample))
+    
+    import genomon_pipeline.core.setup_common as setup
+    y = setup.dump_yaml_input_section(genomon_conf, run_conf, sample_conf)
     
     input_mutation = {}
     for (sample, control, control_panel) in sample_conf.mutation_call:
         input_mutation[sample] = "bam/{sample}/{sample}.markdup.bam".format(sample = sample)
-        outputs.append("mutation/{sample}/{sample}.txt".format(sample = sample))
+        y["output_files"].append("mutation/{sample}/{sample}.txt".format(sample = sample))
     
     input_sv = {}
     for (sample, control, control_panel) in sample_conf.sv_detection:
         input_sv[sample] = "bam/{sample}/{sample}.markdup.bam".format(sample = sample)
-        outputs.append("sv/{sample}/{sample}.txt".format(sample = sample))
+        y["output_files"].append("sv/{sample}/{sample}.txt".format(sample = sample))
     
+    y["mutation_samples"] = input_mutation
+    y["sv_samples"] = input_sv
+
     import yaml
-    open(run_conf.project_root + "/config.yml", "w").write(yaml.dump({
-        "samples": samples,
-        "bwa_samples": input_bwa,
-        "mutation_samples": input_mutation,
-        "sv_samples": input_sv,
-        "output_files": outputs
-    }))
+    open(run_conf.project_root + "/config.yml", "w").write(yaml.dump(y))
     
 def main(genomon_conf, run_conf, sample_conf):
     
