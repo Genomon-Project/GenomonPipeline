@@ -3,7 +3,7 @@ import os
 
 class Sample_conf_abc(object):
 
-    def __init__(self, sample_conf_file, no_exist_check = False):
+    def __init__(self, sample_conf_file, exist_check = True):
         pass
         
     def parse_file(self, file_path):
@@ -98,10 +98,10 @@ class Sample_conf_abc(object):
         return links
     
     def _exists(self, file_path):
-        if self.no_exist_check:
-            return True
-        return os.path.exists(file_path)
-
+        if self.exist_check:
+            return os.path.exists(file_path)
+        return True
+    
     def split_section_data(self, _data, iput_sections, analysis_sections, controlpanel_sections = []):
         
         split_data = {}
@@ -110,7 +110,7 @@ class Sample_conf_abc(object):
         mode = ""
         for row in _data:
             if row[0].startswith('['):
-                mode = row[0].lower()
+                mode = row[0].lower().replace("[", "").replace("]", "")
                 if not mode in except_sections:
                     err_msg = "Unexcepted section %s. " % (mode)
                     err_msg += "Section name should be either of %s. "  % (",".join(except_sections))
@@ -156,6 +156,8 @@ class Sample_conf_abc(object):
                 raise ValueError(err_msg)
         
         for mode in controlpanel_sections:
+            if not mode in split_data:
+                continue
             l = [x[0] for x in split_data[mode]]
             dup = [x for x in set(l) if l.count(x) > 1]
             if len(dup) > 0:

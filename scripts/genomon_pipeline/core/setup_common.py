@@ -23,23 +23,42 @@ def create_directories(genomon_conf, run_conf, sample_conf, snakefile_name):
     for target_sample_dict in (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq):
         for sample in target_sample_dict:
             os.makedirs(run_conf.project_root + '/log/' + sample, exist_ok=True)
-    
+
+# touch snakemake entry-file
+def touch_bam_tofastq(genomon_conf, run_conf, sample_conf):
+    for sample in sample_conf.bam_tofastq:
+        wdir = run_conf.project_root + '/bam_tofastq/' + sample
+        os.makedirs(wdir, exist_ok=True)
+        open(wdir + '/' + sample + ".txt", "w").close()
+
 # link the input fastq to project directory
 def link_input_fastq(genomon_conf, run_conf, sample_conf):
+    linked_fastq = {}
     for sample in sample_conf.fastq:
         fastq_dir = run_conf.project_root + '/fastq/' + sample
-        os.makedirs(run_conf.project_root + '/fastq/' + sample, exist_ok=True)
+        os.makedirs(fastq_dir, exist_ok=True)
+
+        fastq_src = []
+        fastq_src += sample_conf.fastq_src[sample]
+        fastq_src += sample_conf.fastq[sample][0]
+        fastq_src += sample_conf.fastq[sample][1]
+
+        linked_fastq[sample] = {"fastq": [[], []], "src": fastq_src}
         
+
         for (count, fastq_files) in enumerate(sample_conf.fastq[sample][0]):
             fastq_prefix, ext = os.path.splitext(fastq_files)
-            #ext = ".fastq"
-            if not os.path.exists(fastq_dir + '/'+str(count+1)+'_1'+ ext):
-                os.symlink(sample_conf.fastq[sample][0][count], fastq_dir + '/'+str(count+1)+'_1'+ ext)
-            if not os.path.exists(fastq_dir + '/'+str(count+1)+'_2'+ ext):
-                os.symlink(sample_conf.fastq[sample][1][count], fastq_dir + '/'+str(count+1)+'_2'+ ext)
-            
-            open(fastq_dir + '/' + sample + ".txt", "w").close()
-                
+            r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
+            r2 = fastq_dir + '/'+str(count+1)+'_2'+ ext
+            linked_fastq[sample]["fastq"][0] += r1
+            linked_fastq[sample]["fastq"][1] += r2
+
+            if not os.path.exists(r1):
+                os.symlink(sample_conf.fastq[sample][0][count], r1)
+            if not os.path.exists(r2):
+                os.symlink(sample_conf.fastq[sample][1][count], r2)
+    return linked_fastq
+
 # link the import bam to project directory
 def link_import_bam(genomon_conf, run_conf, sample_conf, bam_prefix, bai_prefix):
     linked_bam = {}
@@ -51,7 +70,6 @@ def link_import_bam(genomon_conf, run_conf, sample_conf, bam_prefix, bai_prefix)
         linked_bam[sample] = link_dir +'/'+ sample + bam_prefix
 
         if (not os.path.exists(link_dir +'/'+ sample + bam_prefix)) and (not os.path.exists(link_dir +'/'+ sample + bai_prefix)): 
-            print([link_dir,sample, bam_prefix])
             os.symlink(bam, link_dir +'/'+ sample + bam_prefix)
             if (os.path.exists(bam +'.bai')):
                 os.symlink(bam +'.bai', link_dir +'/'+ sample + bai_prefix)

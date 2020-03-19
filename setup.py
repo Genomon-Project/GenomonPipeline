@@ -3,8 +3,8 @@
 from setuptools import setup, find_packages
 from scripts.genomon_pipeline import __version__
 
-import sys
-sys.path.append('./test')
+#import sys
+#sys.path.append('./tests')
 
 setup(
     name = 'genomon_pipeline',
@@ -37,5 +37,6 @@ setup(
         'pyyml',
         'drmaa',
     ],
-    test_suite = 'unit_tests.suite'
+    #test_suite = 'unit_tests.suite'
+    test_suite = 'tests'
 )

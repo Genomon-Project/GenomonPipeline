@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import genomon_pipeline.core.stage_task_abc as stage_task
 
 class Bwa_align(stage_task.Stage_task):
@@ -22,17 +23,16 @@ set -x
 
 export LD_LIBRARY_PATH=/usr/local/lib
 OUTPUT_PREF={OUTPUT_DIR}/{SAMPLE}
-REFERENCE={REFERENCE_DIR}/{REFERENCE_FILE}
 mkdir -p {OUTPUT_DIR}
 
 /tools/bwa-0.7.17/bwa mem \
   {BWA_OPTION} \
-  ${{REFERENCE}} \
+  {REFERENCE} \
   {FASTQ1} \
   {FASTQ2} \
 | /usr/local/bin/bamsort \
   {BAMSORT_OPTION} \
-  calmdnmreference=${{REFERENCE}} \
+  calmdnmreference={REFERENCE} \
   inputformat=sam \
   indexfilename=${{OUTPUT_PREF}}.sorted.bam.bai \
   O=${{OUTPUT_PREF}}.sorted.bam
@@ -49,15 +49,18 @@ rm ${{OUTPUT_PREF}}.sorted.bam.bai
 
 # merge sorted bams into one and mark duplicate reads with biobambam
 def configure(genomon_conf, run_conf, sample_conf):
+
+    STAGE_NAME = "bwa_alignment"
+    CONF_SECTION = "bwa_alignment"
     params = {
         "work_dir": run_conf.project_root,
-        "stage_name": "bwa_alignment",
-        "image": genomon_conf.get("bwa_alignment", "image"),
-        "qsub_option": genomon_conf.get("bwa_alignment", "qsub_option"),
-        "singularity_option": genomon_conf.get("bwa_alignment", "singularity_option")
+        "stage_name": STAGE_NAME,
+        "image": genomon_conf.path_get(CONF_SECTION, "image"),
+        "qsub_option": genomon_conf.get(CONF_SECTION, "qsub_option"),
+        "singularity_option": genomon_conf.get(CONF_SECTION, "singularity_option")
     }
     stage_class = Bwa_align(params)
-    
+     
     output_bams = {}
     for sample in sample_conf.fastq:
         output_dir = "%s/bam/%s" % (run_conf.project_root, sample)
@@ -69,16 +72,15 @@ def configure(genomon_conf, run_conf, sample_conf):
             "FASTQ1": sample_conf.fastq[sample][0][0],
             "FASTQ2": sample_conf.fastq[sample][1][0],
             "OUTPUT_DIR": output_dir,
-            "REFERENCE_DIR": genomon_conf.get("bwa_alignment", "bwa_reference_dir"),
-            "REFERENCE_FILE": genomon_conf.get("bwa_alignment", "bwa_reference_file"),
-            "BWA_OPTION": genomon_conf.get("bwa_alignment", "bwa_option"),
-            "BAMSORT_OPTION": genomon_conf.get("bwa_alignment", "bamsort_option"),
-            "BAMMARKDUP_OPTION": genomon_conf.get("bwa_alignment", "bammarkduplicates_option")
+            "REFERENCE": genomon_conf.path_get(CONF_SECTION, "bwa_reference"),
+            "BWA_OPTION": genomon_conf.get(CONF_SECTION, "bwa_option"),
+            "BAMSORT_OPTION": genomon_conf.get(CONF_SECTION, "bamsort_option"),
+            "BAMMARKDUP_OPTION": genomon_conf.get(CONF_SECTION, "bammarkduplicates_option")
         }
         
         singularity_bind = [
             run_conf.project_root,
-            genomon_conf.get("bwa_alignment", "bwa_reference_dir"),
+            os.path.dirname(genomon_conf.path_get(CONF_SECTION, "bwa_reference")),
         ] + sample_conf.fastq_src[sample]
         
         stage_class.write_script(arguments, singularity_bind, run_conf, sample = sample)

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from genomon_pipeline import __version__
-import genomon_pipeline.run_engine
+import genomon_pipeline.runner
 import argparse
 
 parser = argparse.ArgumentParser(prog = "genomon_runner")
@@ -10,7 +10,7 @@ parser.add_argument("--version", action = "version", version = "genomon_runner-"
 
 parser.add_argument('script', metavar = "/path/to/singularity_bwa.sh", type = str, help = "input singularity script")
 parser.add_argument("conf", metavar = "/path/to/sample.conf.yml", type = str, help = "input sample list flie [YAML]")
-parser.set_defaults(handler=genomon_pipeline.run_engine.main)
+parser.set_defaults(handler=genomon_pipeline.runner.main)
 
 args = parser.parse_args()
 

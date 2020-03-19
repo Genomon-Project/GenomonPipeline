@@ -2,8 +2,16 @@
 import genomon_pipeline.core.sample_conf_abc as abc
 
 class Sample_conf(abc.Sample_conf_abc):
-
-    def __init__(self, sample_conf_file, no_exist_check = False):
+    SECTION_FASTQ = "fastq"
+    SECTION_BAM_IMPORT = "bam_import"
+    SECTION_BAM_TOFASTQ = "bam_tofastq"
+    SECTION_FUSION = "fusion"
+    SECTION_EXPRESSION = "expression"
+    SECTION_IR = "intron_retention"
+    SECTION_QC = "qc"
+    SECTION_CONTROL_PANEL = "controlpanel"
+    
+    def __init__(self, sample_conf_file, exist_check = True):
         self.fastq = {}
         self.fastq_src = {}
         self.bam_tofastq = {}
@@ -15,7 +23,7 @@ class Sample_conf(abc.Sample_conf_abc):
         self.expression = []
         self.intron_retention = []
         self.qc = []
-        self.no_exist_check = no_exist_check
+        self.exist_check = exist_check
         self.parse_file(sample_conf_file)
     
     def parse_data_fusion(self, _data, controlpanel_list):
@@ -31,37 +39,37 @@ class Sample_conf(abc.Sample_conf_abc):
     
     def parse_data(self, _data):
         
-        input_sections = ["[fastq]", "[bam_import]", "[bam_tofastq]"]
-        analysis_sections = ["[fusion]", "[expression]", "[ir_count]", "[qc]"]
-        controlpanel_sections = ["[controlpanel]"]
+        input_sections = [self.SECTION_FASTQ , self.SECTION_BAM_IMPORT, self.SECTION_BAM_TOFASTQ]
+        analysis_sections = [self.SECTION_FUSION, self.SECTION_EXPRESSION, self.SECTION_IR, self.SECTION_QC]
+        controlpanel_sections = [self.SECTION_CONTROL_PANEL]
         splited = self.split_section_data(_data, input_sections, analysis_sections, controlpanel_sections)
         
-        if "[fastq]" in splited:
-            parsed_fastq = self.parse_data_fastq(self, splited["[fastq]"])
+        if self.SECTION_FASTQ in splited:
+            parsed_fastq = self.parse_data_fastq(self, splited[self.SECTION_FASTQ])
             self.fastq.update(parsed_fastq["fastq"])
             self.fastq_src.update(parsed_fastq["fastq_src"])
         
-        if "[bam_tofastq]" in splited:
-            parsed_bam_tofastq = self.parse_data_bam_tofastq(self, splited["[bam_tofastq]"])
+        if self.SECTION_BAM_TOFASTQ in splited:
+            parsed_bam_tofastq = self.parse_data_bam_tofastq(self, splited[self.SECTION_BAM_TOFASTQ])
             self.bam_tofastq.update(parsed_bam_tofastq["bam_tofastq"])
             self.bam_tofastq_src.update(parsed_bam_tofastq["bam_tofastq_src"])
         
-        if "[bam_import]" in splited:
-            parsed_bam_import = self.parse_data_bam_import(self, splited["[bam_import]"])
+        if self.SECTION_BAM_IMPORT in splited:
+            parsed_bam_import = self.parse_data_bam_import(self, splited[self.SECTION_BAM_IMPORT])
             self.bam_import.update(parsed_bam_import["bam_import"])
             self.bam_import_src.update(parsed_bam_import["bam_import_src"])
         
-        if "[expression]" in splited:
-            self.expression.extend(self.parse_data_general(self, splited["[expression]"]))
+        if self.SECTION_EXPRESSION in splited:
+            self.expression.extend(self.parse_data_general(self, splited[self.SECTION_EXPRESSION]))
         
-        if "[ir_count]" in splited:
-            self.intron_retention.extend(self.parse_data_general(self, splited["[ir_count]"]))
+        if self.SECTION_IR in splited:
+            self.intron_retention.extend(self.parse_data_general(self, splited[self.SECTION_IR]))
         
-        if "[qc]" in splited:
-            self.qc.extend(self.parse_data_general(self, splited["[qc]"]))
+        if self.SECTION_QC in splited:
+            self.qc.extend(self.parse_data_general(self, splited[self.SECTION_QC]))
         
-        if "[controlpanel]" in splited:
-            self.control_panel.update(self.parse_data_controlpanel(self, splited["[controlpanel]"]))
+        if self.SECTION_CONTROL_PANEL in splited:
+            self.control_panel.update(self.parse_data_controlpanel(self, splited[self.SECTION_CONTROL_PANEL]))
         
-        if "[fusion]" in splited:
-            self.fusion.extend(self.parse_data_fusion(self, splited["[fusion]"], self.control_panel.keys()))
+        if self.SECTION_FUSION in splited:
+            self.fusion.extend(self.parse_data_fusion(self, splited[self.SECTION_FUSION], self.control_panel.keys()))

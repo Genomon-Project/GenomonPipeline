@@ -2,8 +2,15 @@
 import genomon_pipeline.core.sample_conf_abc as abc
 
 class Sample_conf(abc.Sample_conf_abc):
-
-    def __init__(self, sample_conf_file, no_exist_check = False):
+    SECTION_FASTQ = "fastq"
+    SECTION_BAM_IMPORT = "bam_import"
+    SECTION_BAM_TOFASTQ = "bam_tofastq"
+    SECTION_MUTATION = "mutation_call"
+    SECTION_SV = "sv_detection"
+    SECTION_QC = "qc"
+    SECTION_CONTROL_PANEL = "controlpanel"
+    
+    def __init__(self, sample_conf_file, exist_check = True):
 
         self.fastq = {}
         self.fastq_src = {}
@@ -15,7 +22,7 @@ class Sample_conf(abc.Sample_conf_abc):
         self.sv_detection = []
         self.qc = []
         self.control_panel = {}
-        self.no_exist_check = no_exist_check
+        self.exist_check = exist_check
         
         self.parse_file(sample_conf_file)
 
@@ -45,38 +52,39 @@ class Sample_conf(abc.Sample_conf_abc):
     
     def parse_data(self, _data):
         
-        input_sections = ["[fastq]", "[bam_import]", "[bam_tofastq]"]
-        analysis_sections = ["[mutation_call]", "[sv_detection]", "[qc]"]
-        controlpanel_sections = ["[controlpanel]"]
+        input_sections = [self.SECTION_FASTQ, self.SECTION_BAM_IMPORT, self.SECTION_BAM_TOFASTQ]
+        analysis_sections = [self.SECTION_MUTATION, self.SECTION_SV, self.SECTION_QC]
+        controlpanel_sections = [self.SECTION_CONTROL_PANEL]
         splited = self.split_section_data(_data, input_sections, analysis_sections, controlpanel_sections)
+        
         sample_ids = []
-        if "[fastq]" in splited:
-            parsed_fastq = self.parse_data_fastq(splited["[fastq]"])
+        if self.SECTION_FASTQ in splited:
+            parsed_fastq = self.parse_data_fastq(splited[self.SECTION_FASTQ])
             self.fastq.update(parsed_fastq["fastq"])
             self.fastq_src.update(parsed_fastq["fastq_src"])
             sample_ids += parsed_fastq["fastq"].keys()
             
-        if "[bam_tofastq]" in splited:
-            parsed_bam_tofastq = self.parse_data_bam_tofastq(splited["[bam_tofastq]"])
+        if self.SECTION_BAM_TOFASTQ in splited:
+            parsed_bam_tofastq = self.parse_data_bam_tofastq(splited[self.SECTION_BAM_TOFASTQ])
             self.bam_tofastq.update(parsed_bam_tofastq["bam_tofastq"])
             self.bam_tofastq_src.update(parsed_bam_tofastq["bam_tofastq_src"])
             sample_ids += parsed_bam_tofastq["bam_tofastq"].keys()
             
-        if "[bam_import]" in splited:
-            parsed_bam_import = self.parse_data_bam_import(splited["[bam_import]"])
+        if self.SECTION_BAM_IMPORT in splited:
+            parsed_bam_import = self.parse_data_bam_import(splited[self.SECTION_BAM_IMPORT])
             self.bam_import.update(parsed_bam_import["bam_import"])
             self.bam_import_src.update(parsed_bam_import["bam_import_src"])
             sample_ids += parsed_bam_import["bam_import"].keys()
             
-        if "[qc]" in splited:
-            self.qc += self.parse_data_general(splited["[qc]"])
+        if self.SECTION_QC in splited:
+            self.qc += self.parse_data_general(splited[self.SECTION_QC])
         
-        if "[controlpanel]" in splited:
-            self.control_panel.update(self.parse_data_controlpanel(splited["[controlpanel]"]))
+        if self.SECTION_CONTROL_PANEL in splited:
+            self.control_panel.update(self.parse_data_controlpanel(splited[self.SECTION_CONTROL_PANEL]))
         
-        if "[mutation_call]" in splited:
-            self.mutation_call += self.parse_data_analysis(splited["[mutation_call]"], "[mutation_call]", sample_ids, self.control_panel.keys())
+        if self.SECTION_MUTATION in splited:
+            self.mutation_call += self.parse_data_analysis(splited[self.SECTION_MUTATION], self.SECTION_MUTATION, sample_ids, self.control_panel.keys())
         
-        if "[sv_detection]" in splited:
-            self.sv_detection += self.parse_data_analysis(splited["[sv_detection]"], "[sv_detection]", sample_ids, self.control_panel.keys())
+        if self.SECTION_SV in splited:
+            self.sv_detection += self.parse_data_analysis(splited[self.SECTION_SV], self.SECTION_SV, sample_ids, self.control_panel.keys())
         

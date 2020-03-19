@@ -14,8 +14,9 @@ class Genomon_conf(object):
     class for job related parameters
     """
 
-    def __init__(self, conf):
-            
+    def __init__(self, conf, exist_check = True):
+        
+        self.exist_check = exist_check
         self.software_version ={'genomon_pipeline':'genomon_pipeline-'+__version__} 
         self.genomon_conf = configparser.SafeConfigParser()
         self.genomon_conf.read(conf)
@@ -91,6 +92,14 @@ class Genomon_conf(object):
 
     def get(self, section, option):
         return self.genomon_conf.get(section, option)
+
+    def path_get(self, section, option):
+        path = self.genomon_conf.get(section, option)
+        if self.exist_check and not os.path.exists(path):
+            err_msg = "[%s] %s: path %s is not exists" % (section, option, path)
+            raise ValueError(err_msg)
+
+        return self.genomon_conf.get(section, option)
     
     def safe_get(self, section, option):
         try:
@@ -98,5 +107,3 @@ class Genomon_conf(object):
         except Exception:
             pass
         return None
-    
-            
