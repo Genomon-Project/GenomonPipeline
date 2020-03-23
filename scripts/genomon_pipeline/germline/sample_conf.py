@@ -51,7 +51,7 @@ class Sample_conf(abc.Sample_conf_abc):
         splited = self.split_section_data(_data, input_sections, analysis_sections, controlpanel_sections)
         sample_ids = []
         if "[fastq]" in splited:
-            parsed_fastq = self.parse_data_fastq(splited["[fastq]"])
+            parsed_fastq = self.parse_data_fastq_pair(splited["[fastq]"])
             self.fastq.update(parsed_fastq["fastq"])
             self.fastq_src.update(parsed_fastq["fastq_src"])
             sample_ids += parsed_fastq["fastq"].keys()

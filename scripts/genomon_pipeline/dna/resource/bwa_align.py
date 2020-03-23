@@ -28,8 +28,8 @@ mkdir -p {OUTPUT_DIR}
 /tools/bwa-0.7.17/bwa mem \
   {BWA_OPTION} \
   {REFERENCE} \
-  '<cat {FASTQ1}' \
-  '<cat {FASTQ2}' \
+  {FASTQ1} \
+  {FASTQ2} \
 | /usr/local/bin/bamsort \
   {BAMSORT_OPTION} \
   calmdnmreference={REFERENCE} \
@@ -66,11 +66,21 @@ def configure(genomon_conf, run_conf, sample_conf):
         output_dir = "%s/bam/%s" % (run_conf.project_root, sample)
         output_bams[sample] = "%s/%s.markdup.bam" % (output_dir, sample)
         
+        if len(sample_conf.fastq[sample][0]) == 1:
+            fastq1 = sample_conf.fastq[sample][0][0]
+        else:
+            fastq1 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][0]))
+
+        if len(sample_conf.fastq[sample][1]) == 1:
+            fastq2 = sample_conf.fastq[sample][1][0]
+        else:
+            fastq2 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][0]))
+
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": sample_conf.fastq[sample],
-            "FASTQ1": " ".join(sample_conf.fastq[sample][0]),
-            "FASTQ2": " ".join(sample_conf.fastq[sample][1]),
+            "FASTQ1": fastq1,
+            "FASTQ2": fastq2,
             "OUTPUT_DIR": output_dir,
             "REFERENCE": genomon_conf.path_get(CONF_SECTION, "bwa_reference"),
             "BWA_OPTION": genomon_conf.get(CONF_SECTION, "bwa_option"),

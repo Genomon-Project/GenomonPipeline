@@ -166,7 +166,7 @@ class Sample_conf_abc(object):
         
         return split_data
     
-    def parse_data_fastq(self, _data):
+    def parse_data_fastq_pair(self, _data):
         """
         pair-read
         """
@@ -204,6 +204,46 @@ class Sample_conf_abc(object):
     
         return {"fastq": fastq, "fastq_src": fastq_src}
     
+
+    def parse_data_fastq_mixed(self, _data):
+        """
+        single-read or pair-read
+        """
+        fastq = {}
+        fastq_src = {}
+        
+        for row in _data:
+            sampleID = row[0]
+            
+            if len(row) < 2:
+                err_msg = sampleID + ": the path for read1 (and read2) should be provided"
+                raise ValueError(err_msg)
+
+            sequence1 = row[1].split(';')
+            sequence2 = False
+            if len(row) > 2:
+                sequence2 = row[2].split(';')
+                
+            fastq_src[sampleID] = []
+            for s in range(len(sequence1)):
+                if not self._exists(sequence1[s]):
+                    err_msg = sampleID + ": " + sequence1[s] +  " does not exists" 
+                    raise ValueError(err_msg)
+                fastq_src[sampleID].append(sequence1[s])
+                fastq_src[sampleID].extend(self._link_sources(sequence1[s]))
+                                
+                if sequence2 != False:
+                    if not self._exists(sequence2[s]):
+                        err_msg = sampleID + ": " + sequence2[s] +  " does not exists" 
+                        raise ValueError(err_msg)
+                    fastq_src[sampleID].append(sequence2[s])
+                    fastq_src[sampleID].extend(self._link_sources(sequence2[s]))
+
+            fastq[sampleID] = [sequence1]
+    
+        return {"fastq": fastq, "fastq_src": fastq_src}
+    
+
     def parse_data_bam_tofastq(self, _data):
     
         bam_tofastq = {}

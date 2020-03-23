@@ -4,36 +4,36 @@ rule all:
     input:
         "join/all.txt"
 
-rule bwa:
+rule bam_tofastq:
     input:
-        "fastq/{sample}/{sample}.txt"
+        "bam_tofastq/{sample}/{sample}.txt"
     output:
-        "bam/{sample}/{sample}.markdup.bam"
+        r1 = "fastq/{sample}/1_1.fastq"
     params:
-        script = "script/{sample}/singularity_bwa_alignment.sh",
-        yaml = "script/{sample}/conf_bwa_alignment.yml"
+        script = "script/{sample}/singularity_bam_tofastq.sh",
+        yaml = "script/{sample}/conf_bam_tofastq.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 
-rule mutation:
+rule star:
     input:
-        lambda wildcards: config["mutation_samples"][wildcards.sample],
+        lambda wildcards: config["aln_samples"][wildcards.sample],
     output:
-        "mutation/{sample}/{sample}.txt"
+        "star/{sample}/{sample}.Aligned.sortedByCoord.out.bam"
     params:
-        script = "script/{sample}/singularity_mutation_dummy.sh",
-        yaml = "script/{sample}/conf_mutation_dummy.yml"
+        script = "script/{sample}/singularity_star_alignment.sh",
+        yaml = "script/{sample}/conf_star_alignment.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 
-rule sv:
+rule expression:
     input:
-        lambda wildcards: config["sv_samples"][wildcards.sample]
+        lambda wildcards: config["expression_samples"][wildcards.sample],
     output:
-        "sv/{sample}/{sample}.txt"
+        "expression/{sample}/{sample}.txt.fpkm"
     params:
-        script = "script/{sample}/singularity_sv_dummy.sh",
-        yaml = "script/{sample}/conf_sv_dummy.yml"
+        script = "script/{sample}/singularity_expression_dummy.sh",
+        yaml = "script/{sample}/conf_expression_dummy.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 

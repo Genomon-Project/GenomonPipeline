@@ -1,0 +1,5 @@
+[bam_tofastq]
+MCF-7_test,/share/pub/genomon/sandbox/rna/star/MCF-7_test/MCF-7_test.Aligned.sortedByCoord.out.bam
+
+[qc]
+MCF-7_test

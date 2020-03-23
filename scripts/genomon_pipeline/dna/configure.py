@@ -3,7 +3,7 @@
 def dump_conf_yaml(genomon_conf, run_conf, sample_conf):
     
     import genomon_pipeline.core.setup_common as setup
-    y = setup.dump_yaml_input_section(genomon_conf, run_conf, sample_conf)
+    y = setup.dump_yaml_input_section(genomon_conf, run_conf, (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq))
     
     input_mutation = {}
     for (sample, control, control_panel) in sample_conf.mutation_call:
@@ -25,8 +25,8 @@ def main(genomon_conf, run_conf, sample_conf):
     
     # preparation
     import genomon_pipeline.core.setup_common as setup
-    setup.create_directories(genomon_conf, run_conf, sample_conf, 'dna/data/snakefile.txt')
-    setup.touch_bam_tofastq(genomon_conf, run_conf, sample_conf)
+    setup.create_directories(genomon_conf, run_conf, (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq), 'dna/data/snakefile.txt')
+    setup.touch_bam_tofastq(genomon_conf, run_conf, sample_conf.bam_tofastq)
     
     # link fastq
     linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf)

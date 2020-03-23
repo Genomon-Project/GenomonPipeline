@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(prog = "genomon_pipeline")
 
 parser.add_argument("--version", action = "version", version = "genomon_pipeline-" + genomon_pipeline.__version__)
 
-parser.add_argument('analysis_type', choices=['dna', 'rna'],
+parser.add_argument('analysis_type', choices=['dna', 'rna', 'germ'],
                     help = "analysis type")
 
 parser.add_argument("sample_conf_file", metavar = "sample_conf.csv", default = None, type = str,

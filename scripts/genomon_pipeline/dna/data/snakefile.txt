@@ -18,7 +18,7 @@ rule bam_tofastq:
 
 rule bwa:
     input:
-        lambda wildcards: config["bwa_samples"][wildcards.sample],
+        lambda wildcards: config["aln_samples"][wildcards.sample],
     output:
         "bam/{sample}/{sample}.markdup.bam"
     params:

@@ -2,7 +2,7 @@
 
 import genomon_pipeline.core.stage_task_abc as stage_task
 
-class Mutation_dummy(stage_task.Stage_task):
+class Expression(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)
         self.shell_script_template = """
@@ -20,28 +20,34 @@ set -o nounset
 set -o pipefail
 set -x
 
+OUTPUT_PREF={OUTPUT_DIR}/{SAMPLE}
 mkdir -p {OUTPUT_DIR}
-samtools view -H {INPUT_BAM} > {OUTPUT_DIR}/{SAMPLE}.txt
+
+featureCounts -T 4 -p -a ${GTF} -O -B -C -o ${{OUTPUT_PREF}}.txt {INPUT_BAM}
+python /tools/simple_exp/proc_fc.py ${{OUTPUT_PREF}}.txt ${{OUTPUT_PREF}}.txt.summary ${GTF} > ${{OUTPUT_PREF}}.txt.fpkm
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
 def configure(input_bams, genomon_conf, run_conf, sample_conf):
+    STAGE_NAME = "expression"
+    SECTION_NAME = STAGE_NAME
     params = {
         "work_dir": run_conf.project_root,
-        "stage_name": "mutation_dummy",
-        "image": genomon_conf.get("mutation_dummy", "image"),
-        "qsub_option": genomon_conf.get("mutation_dummy", "qsub_option"),
-        "singularity_option": genomon_conf.get("mutation_dummy", "singularity_option")
+        "stage_name": STAGE_NAME,
+        "image": genomon_conf.path_get(SECTION_NAME, "image"),
+        "qsub_option": genomon_conf.get(SECTION_NAME, "qsub_option"),
+        "singularity_option": genomon_conf.get(SECTION_NAME, "singularity_option")
     }
-    stage_class = Mutation_dummy(params)
+    stage_class = Expression(params)
     
-    for (sample, control, control_panel) in sample_conf.mutation_call:
-        output_dir = "%s/mutation/%s" % (run_conf.project_root, sample)
+    for sample in sample_conf.expression:
+        output_dir = "%s/expression/%s" % (run_conf.project_root, sample)
     
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": input_bams[sample],
             "OUTPUT_DIR": output_dir,
+            "GTF": genomon_conf.path_get(SECTION_NAME, "gtf")
         }
        
         singularity_bind = [run_conf.project_root]

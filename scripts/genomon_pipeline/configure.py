@@ -28,6 +28,14 @@ def main(args):
     if run_conf.analysis_type == "dna":
         import genomon_pipeline.dna.sample_conf as sc
         import genomon_pipeline.dna.configure as configure
+
+    elif run_conf.analysis_type == "rna":
+        import genomon_pipeline.rna.sample_conf as sc
+        import genomon_pipeline.rna.configure as configure
+    
+    elif run_conf.analysis_type == "germ":
+        import genomon_pipeline.germ.sample_conf as sc
+        import genomon_pipeline.germ.configure as configure
         
     sample_conf = sc.Sample_conf(run_conf.sample_conf_file)
     configure.main(genomon_conf = genomon_conf, run_conf = run_conf, sample_conf = sample_conf)
