@@ -1,0 +1,18 @@
+FROM centos:centos7
+
+MAINTAINER aokada <aokada@ncc.go.jp>
+
+WORKDIR /tools
+
+RUN yum -y update && \
+    yum install -y which tar unzip git vim python3 wget && \
+    \
+    pip3 install drmaa && \
+    pip3 install ruffus && \
+    wget https://github.com/Genomon-Project/GenomonPipeline/archive/simg.zip && \
+    unzip simg.zip && \
+    rm simg.zip && \
+    cd GenomonPipeline-simg && \
+    python3 setup.py build install
+    
+CMD ["/bin/bash"]
