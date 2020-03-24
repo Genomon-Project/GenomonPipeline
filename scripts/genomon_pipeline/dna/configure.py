@@ -3,7 +3,14 @@
 def dump_conf_yaml(genomon_conf, run_conf, sample_conf):
     
     import genomon_pipeline.core.setup_common as setup
-    y = setup.dump_yaml_input_section(genomon_conf, run_conf, (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq))
+    y = setup.dump_yaml_input_section(
+        genomon_conf, 
+        run_conf, 
+        (sample_conf.bam_tofastq),
+        sample_conf.fastq,
+        sample_conf.bam_import, 
+        "bam/{sample}/{sample}.markdup.bam"
+    )
     
     input_mutation = {}
     for (sample, control, control_panel) in sample_conf.mutation_call:
@@ -25,14 +32,15 @@ def main(genomon_conf, run_conf, sample_conf):
     
     # preparation
     import genomon_pipeline.core.setup_common as setup
-    setup.create_directories(genomon_conf, run_conf, (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq), 'dna/data/snakefile.txt')
-    setup.touch_bam_tofastq(genomon_conf, run_conf, sample_conf.bam_tofastq)
+    input_stages = (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq)
+    setup.create_directories(genomon_conf, run_conf, input_stages, 'dna/data/snakefile.txt')
+    setup.touch_bam_tofastq(genomon_conf, run_conf, (sample_conf.bam_tofastq))
     
     # link fastq
-    linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf)
+    linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf.fastq, sample_conf.fastq_src)
     
     # bam import
-    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf, '.markdup.bam', '.markdup.bam.bai')
+    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf.bam_import, '.markdup.bam', '.markdup.bam.bai')
     
     # bam to fastq
     import genomon_pipeline.dna.resource.bamtofastq as rs_bamtofastq

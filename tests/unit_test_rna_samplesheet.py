@@ -97,22 +97,30 @@ list1,pool1,pool2,pool3
         
         self.assertEqual(sample_conf.fastq, {
             'A_tumor': [[self.SAMPLE_DIR + 'A1.fastq'], [self.SAMPLE_DIR + 'A2.fastq']], 
+            'A_tumor_s': [[self.SAMPLE_DIR + 'A1.fastq']], 
             'pool1': [[self.SAMPLE_DIR + 'B1.fq'], [self.SAMPLE_DIR + 'B2.fq']], 
-            'pool2': [[self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C1_2.fq'], [self.SAMPLE_DIR + 'C2_1.fq', self.SAMPLE_DIR + 'C2_2.fq']]
+            'pool1_s': [[self.SAMPLE_DIR + 'B1.fq']], 
+            'pool2': [[self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C1_2.fq'], [self.SAMPLE_DIR + 'C2_1.fq', self.SAMPLE_DIR + 'C2_2.fq']],
+            'pool2_s': [[self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C1_2.fq']],
         })
-
+        
         self.assertEqual(sample_conf.fastq_src, {
             'A_tumor': [self.SAMPLE_DIR + 'A1.fastq', self.SAMPLE_DIR + 'A2.fastq'], 
+            'A_tumor_s': [self.SAMPLE_DIR + 'A1.fastq'], 
             'pool1': [self.SAMPLE_DIR + 'B1.fq', self.SAMPLE_DIR + 'B2.fq'], 
-            'pool2': [self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C2_1.fq', self.SAMPLE_DIR + 'C1_2.fq', self.SAMPLE_DIR + 'C2_2.fq']
+            'pool1_s': [self.SAMPLE_DIR + 'B1.fq'], 
+            'pool2': [self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C2_1.fq', self.SAMPLE_DIR + 'C1_2.fq', self.SAMPLE_DIR + 'C2_2.fq'],
+            'pool2_s': [self.SAMPLE_DIR + 'C1_1.fq', self.SAMPLE_DIR + 'C1_2.fq'],
         })
 
-        self.assertEqual(sample_conf.bam_tofastq, {'A_control': self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam'})
-        self.assertEqual(sample_conf.bam_tofastq_src, {'A_control': [self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam']})
+        self.assertEqual(sample_conf.bam_tofastq_pair, {'A_control': self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam'})
+        self.assertEqual(sample_conf.bam_tofastq_pair_src, {'A_control': [self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam']})
+        self.assertEqual(sample_conf.bam_tofastq_single, {'A_control_s': self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam'})
+        self.assertEqual(sample_conf.bam_tofastq_single_src, {'A_control_s': [self.SAMPLE_DIR + 'A.Aligned.sortedByCoord.out.bam']})
         self.assertEqual(sample_conf.bam_import, {'pool3': self.SAMPLE_DIR + 'B.Aligned.sortedByCoord.out.bam'})
         self.assertEqual(sample_conf.bam_import_src, {'pool3': [self.SAMPLE_DIR + 'B.Aligned.sortedByCoord.out.bam', self.SAMPLE_DIR + 'B.Aligned.sortedByCoord.out.bai']})
-        self.assertEqual(sample_conf.mutation_call, [('A_tumor', 'A_control', 'list1'), ('A_control', None, None)])
-        self.assertEqual(sample_conf.sv_detection, [('A_tumor', 'A_control', 'list1')])
+        self.assertEqual(sample_conf.fusion, [('A_tumor', 'list1'), ('A_control', None)])
+        self.assertEqual(sample_conf.expression, ['A_tumor', 'A_tumor_s'])
         self.assertEqual(sample_conf.qc, ['A_tumor', 'A_control', 'pool1', 'pool2', 'pool3'])
         self.assertEqual(sample_conf.control_panel, {'list1': ['pool1', 'pool2', 'pool3']})
 
@@ -122,7 +130,7 @@ list1,pool1,pool2,pool3
     def test1_02_ok(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """
-[bam_tofastq]
+[bam_tofastq_single]
 A_tumor,{sample_dir}A.Aligned.sortedByCoord.out.bam
 A_control,{sample_dir}A.Aligned.sortedByCoord.out.bam
 pool1,{sample_dir}A.Aligned.sortedByCoord.out.bam
@@ -139,12 +147,12 @@ list1,pool1
         f.close()
         sample_conf = sc.Sample_conf(ss_path)
         
-        self.assertEqual(sample_conf.mutation_call, [('A_tumor', None, None)])
+        self.assertEqual(sample_conf.fusion, [('A_tumor', None)])
 
     def test1_03_ok(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """
-[bam_tofastq]
+[bam_tofastq_single]
 A_tumor,{sample_dir}A.Aligned.sortedByCoord.out.bam
 A_control,{sample_dir}A.Aligned.sortedByCoord.out.bam
 pool1,{sample_dir}A.Aligned.sortedByCoord.out.bam
@@ -161,7 +169,7 @@ list1,pool1
         f.close()
         sample_conf = sc.Sample_conf(ss_path)
         
-        self.assertEqual(sample_conf.mutation_call, [('A_tumor', 'A_control', None)])
+        self.assertEqual(sample_conf.fusion, [('A_tumor', 'list1')])
 
     # --------------------------------------------------------------------
     # Not Exist
@@ -228,7 +236,7 @@ pool2,{sample_dir}C1_1.fq;{sample_dir}C1_2.fq,{sample_dir}C2_1.fq;{sample_dir}C2
 
     def test2_04_not_exists(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
-        data = """[bam_tofastq],,,,
+        data = """[bam_tofastq_single],,,,
 A_control,{sample_dir}X.Aligned.sortedByCoord.out.bam,,,
 """.format(sample_dir = self.SAMPLE_DIR)
         
@@ -398,7 +406,7 @@ A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,,
 
     def test4_02_duplicate(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
-        data = """[bam_tofastq]
+        data = """[bam_tofastq_single]
 A_control,{sample_dir}A.Aligned.sortedByCoord.out.bam
 A_control,{sample_dir}A.Aligned.sortedByCoord.out.bam
 """.format(sample_dir = self.SAMPLE_DIR)
@@ -438,7 +446,7 @@ pool3,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,,
-[bam_tofastq],,,,
+[bam_tofastq_single],,,,
 A_tumor,{sample_dir}A.Aligned.sortedByCoord.out.bam,,,
 [bam_import],,,,
 pool1,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
@@ -460,7 +468,7 @@ pool1,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,,
-[bam_tofastq],,,,
+[bam_tofastq_single],,,,
 pool3,{sample_dir}A.Aligned.sortedByCoord.out.bam,,,
 [bam_import],,,,
 pool3,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
@@ -482,7 +490,7 @@ pool3,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 pool3,{sample_dir}A1.fastq,{sample_dir}A2.fastq,,
-[bam_tofastq],,,,
+[bam_tofastq_single],,,,
 A_tumor,{sample_dir}A.Aligned.sortedByCoord.out.bam,,,
 [bam_import],,,,
 pool3,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
@@ -507,7 +515,7 @@ pool3,{sample_dir}B.Aligned.sortedByCoord.out.bam,,,
 A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,,
 pool1,{sample_dir}B1.fq,{sample_dir}B2.fq,,
 
-[bam_tofastq],,,,
+[bam_tofastq_single],,,,
 A_control,{sample_dir}A.Aligned.sortedByCoord.out.bam,,,
 
 [fusion],,,,
@@ -604,7 +612,7 @@ list1,pool2
     # --------------------------------------------------------------------
     # Format error
     # --------------------------------------------------------------------
-    def test5_01_unformat(self):
+    def test5_01_unformat_ok(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}A1.fastq
@@ -620,9 +628,9 @@ A_tumor,{sample_dir}A1.fastq
             print(e)
             fail = True
 
-        self.assertTrue(fail)
+        self.assertFalse(fail)
 
-    def test5_02_unformat(self):
+    def test5_02_unformat_ok(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,{sample_dir}A2.fastq
@@ -638,11 +646,11 @@ A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,{sample_dir}A2.fastq
             print(e)
             fail = True
 
-        self.assertTrue(fail)
+        self.assertFalse(fail)
 
     def test5_03_unformat(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
-        data = """[bam_tofastq]
+        data = """[bam_tofastq_single]
 {sample_dir}A.Aligned.sortedByCoord.out.bam
 """.format(sample_dir = self.SAMPLE_DIR)
         
@@ -660,7 +668,7 @@ A_tumor,{sample_dir}A1.fastq,{sample_dir}A2.fastq,{sample_dir}A2.fastq
 
     def test5_04_unformat(self):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
-        data = """[bam_tofastq]
+        data = """[bam_tofastq_single]
 A_tumor,{sample_dir}A.Aligned.sortedByCoord.out.bam,{sample_dir}B.Aligned.sortedByCoord.out.bam
 """.format(sample_dir = self.SAMPLE_DIR)
         

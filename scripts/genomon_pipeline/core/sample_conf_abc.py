@@ -102,11 +102,11 @@ class Sample_conf_abc(object):
             return os.path.exists(file_path)
         return True
     
-    def split_section_data(self, _data, iput_sections, analysis_sections, controlpanel_sections = []):
+    def split_section_data(self, _data, input_sections, analysis_sections, controlpanel_sections = []):
         
         split_data = {}
         sampleID_list = []
-        except_sections = iput_sections + analysis_sections + controlpanel_sections
+        except_sections = input_sections + analysis_sections + controlpanel_sections
         mode = ""
         for row in _data:
             if row[0].startswith('['):
@@ -125,7 +125,7 @@ class Sample_conf_abc(object):
                 err_msg = "None can not be used as sampleID"
                 raise ValueError(err_msg)
 
-            if mode in iput_sections:
+            if mode in input_sections:
                 if sampleID in sampleID_list:
                     err_msg = sampleID + " is duplicated"
                     raise ValueError(err_msg)
@@ -219,9 +219,9 @@ class Sample_conf_abc(object):
                 err_msg = sampleID + ": the path for read1 (and read2) should be provided"
                 raise ValueError(err_msg)
 
+            pair = len(row) == 3
             sequence1 = row[1].split(';')
-            sequence2 = False
-            if len(row) > 2:
+            if pair:
                 sequence2 = row[2].split(';')
                 
             fastq_src[sampleID] = []
@@ -232,14 +232,17 @@ class Sample_conf_abc(object):
                 fastq_src[sampleID].append(sequence1[s])
                 fastq_src[sampleID].extend(self._link_sources(sequence1[s]))
                                 
-                if sequence2 != False:
+                if pair:
                     if not self._exists(sequence2[s]):
                         err_msg = sampleID + ": " + sequence2[s] +  " does not exists" 
                         raise ValueError(err_msg)
                     fastq_src[sampleID].append(sequence2[s])
                     fastq_src[sampleID].extend(self._link_sources(sequence2[s]))
-
-            fastq[sampleID] = [sequence1]
+            
+            if pair:
+                fastq[sampleID] = [sequence1, sequence2]
+            else:
+                fastq[sampleID] = [sequence1]
     
         return {"fastq": fastq, "fastq_src": fastq_src}
     

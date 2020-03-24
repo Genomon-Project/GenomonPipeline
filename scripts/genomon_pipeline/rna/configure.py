@@ -35,7 +35,7 @@ def main(genomon_conf, run_conf, sample_conf):
     linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf.fastq, sample_conf.fastq_src)
     
     # bam import
-    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf.bam_import, '.Aligned.sortedByCoord.out.bam', '.Aligned.sortedByCoord.out.bam.bai')
+    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf.bam_import, '.Aligned.sortedByCoord.out.bam', '.Aligned.sortedByCoord.out.bam.bai', "star")
     
     # bam to fastq
     import genomon_pipeline.rna.resource.bamtofastq_single as rs_bamtofastq_single

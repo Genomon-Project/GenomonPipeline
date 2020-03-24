@@ -64,11 +64,11 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
     return linked_fastq
 
 # link the import bam to project directory
-def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_prefix, bai_prefix):
+def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_prefix, bai_prefix, subdir = "bam"):
     linked_bam = {}
     for sample in bam_import_stage:
         bam = bam_import_stage[sample]
-        link_dir = run_conf.project_root + '/bam/' + sample
+        link_dir = "%s/%s/%s" % (run_conf.project_root, subdir, sample)
         os.makedirs(link_dir, exist_ok=True)
         prefix, ext = os.path.splitext(bam)
         linked_bam[sample] = link_dir +'/'+ sample + bam_prefix
