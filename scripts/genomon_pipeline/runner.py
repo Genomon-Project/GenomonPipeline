@@ -94,7 +94,9 @@ class Qsub_runner(Runner):
         if self.max_task != 0:
             qsub_commands.extend(['-t', '1-'+str(self.max_task)+':1'])
 
-        qsub_options = self.qsub_option.split(' ')
+        qsub_options = []
+        if type(self.qsub_option) == type(""):
+            qsub_options += self.qsub_option.split(' ')
         returncode = subprocess.call(qsub_commands + qsub_options + [self.singularity_script])
 
         if returncode != 0: 
