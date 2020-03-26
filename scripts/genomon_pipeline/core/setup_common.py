@@ -44,7 +44,7 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
     for sample in fastq_stage:
         fastq_dir = run_conf.project_root + '/fastq/' + sample
         os.makedirs(fastq_dir, exist_ok=True)
-        pair = len(fastq_stage[sample]) > 2
+        pair = len(fastq_stage[sample]) > 1
             
         new_fastq_src = []
         new_fastq_src += fastq_stage_src[sample]
@@ -101,15 +101,15 @@ def dump_yaml_input_section(genomon_conf, run_conf, bam_tofastq_stages, fastq_st
     for stage in bam_tofastq_stages:
         for sample in stage:
             samples.append(sample)
-            outputs.append("fastq/{sample}/1_1.fastq".format(sample = sample))
+            outputs.append("fastq/%s/pass.txt" % (sample))
         
     input_aln = {}
     for sample in fastq_stage:
-        input_aln[sample] = "fastq/%s/%s" % (sample, fastq_stage[sample][0][0].split("/")[-1])
+        input_aln[sample] = "fastq/%s/pass.txt" % (sample)
         outputs.append(bam_template.format(sample = sample))
     
     for sample in bam_import_stage:
-        input_aln[sample] = "fastq/%s/1_1.fastq" % (sample)
+        input_aln[sample] = "fastq/%s/pass.txt" % (sample)
         
     return {
         "samples": samples,

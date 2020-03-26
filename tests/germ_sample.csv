@@ -1,0 +1,6 @@
+[fastq]
+5929_tumor,/share/pub/genomon/samples/test5929/5929_tumor/sequence1.fastq,/share/pub/genomon/samples/test5929/5929_tumor/sequence2.fastq
+
+[gatk-haplotypecaller-parabrics-compatible]
+5929_tumor
+

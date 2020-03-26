@@ -8,7 +8,7 @@ rule bam_tofastq:
     input:
         "bam_tofastq/{sample}/{sample}.txt"
     output:
-        r1 = "fastq/{sample}/1_1.fastq"
+        "fastq/{sample}/pass.tx"
     params:
         script = "script/{sample}/singularity_bam_tofastq.sh",
         yaml = "script/{sample}/conf_bam_tofastq.yml"
@@ -32,8 +32,8 @@ rule expression:
     output:
         "expression/{sample}/{sample}.txt.fpkm"
     params:
-        script = "script/{sample}/singularity_expression_dummy.sh",
-        yaml = "script/{sample}/conf_expression_dummy.yml"
+        script = "script/{sample}/singularity_expression.sh",
+        yaml = "script/{sample}/conf_expression.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 

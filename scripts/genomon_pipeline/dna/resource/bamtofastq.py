@@ -55,6 +55,7 @@ else
         rm {o2_name}.tmp
     done
 fi
+touch {pass}
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
@@ -86,7 +87,8 @@ def configure(genomon_conf, run_conf, sample_conf):
             "o1_name": output_dir + '/unmatched_first_output.txt',
             "o2_name": output_dir + '/unmatched_second_output.txt',
             "t": output_dir + '/temp.txt',
-            "s": output_dir + '/single_end_output.txt'
+            "s": output_dir + '/single_end_output.txt',
+            "pass": output_dir + '/pass.txt'
         }
         
         singularity_bind = [

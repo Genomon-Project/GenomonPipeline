@@ -51,7 +51,7 @@ class Sample_conf(abc.Sample_conf_abc):
             parsed_fastq = self.parse_data_fastq_mixed(splited[self.SECTION_FASTQ])
             self.fastq.update(parsed_fastq["fastq"])
             self.fastq_src.update(parsed_fastq["fastq_src"])
-        
+
         if self.SECTION_BAM_TOFASTQ_PAIR in splited:
             parsed_bam_tofastq_pair = self.parse_data_bam_tofastq(splited[self.SECTION_BAM_TOFASTQ_PAIR])
             self.bam_tofastq_pair.update(parsed_bam_tofastq_pair["bam_tofastq"])

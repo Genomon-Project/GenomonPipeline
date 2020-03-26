@@ -80,7 +80,7 @@ def configure(genomon_conf, run_conf, sample_conf):
             if len(sample_conf.fastq[sample][1]) == 1:
                 fastq2 = sample_conf.fastq[sample][1][0]
             else:
-                fastq2 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][0]))
+                fastq2 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][1]))
 
         arguments = {
             "SAMPLE": sample,

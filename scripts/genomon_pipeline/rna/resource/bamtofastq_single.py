@@ -47,12 +47,14 @@ else
         rm {o1_name}.tmp
     done
 fi
+touch {pass}
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
 def configure(genomon_conf, run_conf, sample_conf):
     
-    STAGE_NAME = sample_conf.SECTION_BAM_TOFASTQ_SINGLE
+    #STAGE_NAME = sample_conf.SECTION_BAM_TOFASTQ_SINGLE
+    STAGE_NAME = "bam_tofastq"
     CONF_SECTION = "bam_tofastq"
     params = {
         "work_dir": run_conf.project_root,
@@ -75,7 +77,8 @@ def configure(genomon_conf, run_conf, sample_conf):
             "f1_name": f1_name,
             "o1_name": output_dir + '/unmatched_first_output.txt',
             "t": output_dir + '/temp.txt',
-            "s": output_dir + '/single_end_output.txt'
+            "s": output_dir + '/single_end_output.txt',
+            "pass": output_dir + '/pass.txt'
         }
         
         singularity_bind = [

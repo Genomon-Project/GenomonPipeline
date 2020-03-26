@@ -1,0 +1,15 @@
+[bam_tofastq_pair]
+MCF-7_1,/share/pub/genomon/sandbox/rna/star/MCF-7_test/MCF-7_test.Aligned.sortedByCoord.out.bam
+
+[bam_import]
+MCF-7_2,/share/pub/genomon/sandbox/rna/star/MCF-7_test/MCF-7_test.Aligned.sortedByCoord.out.bam
+
+[fastq]
+MCF-7_3,/share/pub/genomon/samples/testMCF-7/test1.fastq,/share/pub/genomon/samples/testMCF-7/test2.fastq
+
+[expression]
+MCF-7_1
+MCF-7_2
+MCF-7_3
+
+

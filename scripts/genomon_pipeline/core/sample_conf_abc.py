@@ -218,7 +218,7 @@ class Sample_conf_abc(object):
             if len(row) < 2:
                 err_msg = sampleID + ": the path for read1 (and read2) should be provided"
                 raise ValueError(err_msg)
-
+            
             pair = len(row) == 3
             sequence1 = row[1].split(';')
             if pair:
@@ -243,7 +243,6 @@ class Sample_conf_abc(object):
                 fastq[sampleID] = [sequence1, sequence2]
             else:
                 fastq[sampleID] = [sequence1]
-    
         return {"fastq": fastq, "fastq_src": fastq_src}
     
 
