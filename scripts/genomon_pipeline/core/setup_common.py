@@ -5,6 +5,9 @@ import shutil
 import pkg_resources
 
 def create_directories(genomon_conf, run_conf, input_stages, snakefile_name):
+    if not type(input_stages) in [type(()), type([])]:
+        raise Exception("type of input_stages must be tuple or list")
+        
     # mkdir config
     os.makedirs(run_conf.project_root + '/config/', exist_ok=True)
     
@@ -26,6 +29,9 @@ def create_directories(genomon_conf, run_conf, input_stages, snakefile_name):
 
 # touch snakemake entry-file
 def touch_bam_tofastq(genomon_conf, run_conf, bam_tofastq_stages):
+    if not type(bam_tofastq_stages) in [type(()), type([])]:
+        raise Exception("type of bam_tofastq_stages must be tuple or list")
+        
     for stage in bam_tofastq_stages:
         for sample in stage:
             wdir = run_conf.project_root + '/bam_tofastq/' + sample
@@ -64,25 +70,32 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
     return linked_fastq
 
 # link the import bam to project directory
-def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_prefix, bai_prefix, subdir = "bam"):
+def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_postfix, bai_postfix, subdir = "bam"):
     linked_bam = {}
     for sample in bam_import_stage:
         bam = bam_import_stage[sample]
         link_dir = "%s/%s/%s" % (run_conf.project_root, subdir, sample)
         os.makedirs(link_dir, exist_ok=True)
         prefix, ext = os.path.splitext(bam)
-        linked_bam[sample] = link_dir +'/'+ sample + bam_prefix
+        if ext == ".bam":
+            bai = ".bai"
+        elif ext == ".cram":
+            bai = ".crai"
+        linked_bam[sample] = link_dir +'/'+ sample + bam_postfix
 
-        if (not os.path.exists(link_dir +'/'+ sample + bam_prefix)) and (not os.path.exists(link_dir +'/'+ sample + bai_prefix)): 
-            os.symlink(bam, link_dir +'/'+ sample + bam_prefix)
-            if (os.path.exists(bam +'.bai')):
-                os.symlink(bam +'.bai', link_dir +'/'+ sample + bai_prefix)
-            elif (os.path.exists(bam_prefix +'.bai')):
-                os.symlink(bam_prefix +'.bai', link_dir +'/'+ sample + bai_prefix)
+        if (not os.path.exists(link_dir +'/'+ sample + bam_postfix)) and (not os.path.exists(link_dir +'/'+ sample + bai_postfix)): 
+            os.symlink(bam, link_dir +'/'+ sample + bam_postfix)
+            if (os.path.exists(bam + bai)):
+                os.symlink(bam + bai, link_dir +'/'+ sample + bai_postfix)
+            elif (os.path.exists(bam_postfix + bai)):
+                os.symlink(bam_postfix + bai, link_dir +'/'+ sample + bai_postfix)
     return linked_bam
 
 
 def dump_yaml_input_section(genomon_conf, run_conf, bam_tofastq_stages, fastq_stage, bam_import_stage, bam_template):
+    if not type(bam_tofastq_stages) in [type(()), type([])]:
+        raise Exception("type of bam_tofastq_stages must be tuple or list")
+    
     samples = []
     outputs =[]
     for stage in bam_tofastq_stages:

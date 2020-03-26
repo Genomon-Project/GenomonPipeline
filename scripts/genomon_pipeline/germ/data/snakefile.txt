@@ -1,0 +1,48 @@
+configfile: "config.yml"
+
+rule all:
+    input:
+        "join/all.txt"
+
+rule bam_tofastq:
+    input:
+        "bam_tofastq/{sample}/{sample}.txt"
+    output:
+        r1 = "fastq/{sample}/1_1.fastq",
+        r2 = "fastq/{sample}/1_2.fastq"
+    params:
+        script = "script/{sample}/singularity_bam_tofastq.sh",
+        yaml = "script/{sample}/conf_bam_tofastq.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
+rule fq2cram:
+    input:
+        lambda wildcards: config["aln_samples"][wildcards.sample],
+    output:
+        "cram/{sample}/{sample}.markdup.cram"
+    params:
+        script = "script/{sample}/singularity_fq2cram.sh",
+        yaml = "script/{sample}/conf_fq2cram.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
+rule haplotypecaller:
+    input:
+        lambda wildcards: config["htc_samples"][wildcards.sample],
+    output:
+        "haplotypecaller/{sample}/{sample}.gatk-hc.vcf"
+    params:
+        script = "script/{sample}/singularity_haplotypecaller.sh",
+        yaml = "script/{sample}/conf_haplotypecaller.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
+rule join:
+    input:
+        ["{dataset}".format(dataset=dataset) for dataset in config["output_files"]]
+    output:
+        "join/all.txt"
+    shell:
+        "cat {input} > {output}"
+

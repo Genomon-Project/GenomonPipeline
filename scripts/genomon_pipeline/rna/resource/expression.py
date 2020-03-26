@@ -40,9 +40,11 @@ def configure(input_bams, genomon_conf, run_conf, sample_conf):
     }
     stage_class = Expression(params)
     
+    output_files = []
     for sample in sample_conf.expression:
         output_dir = "%s/expression/%s" % (run_conf.project_root, sample)
-    
+        output_files.append("expression/{sample}/{sample}.txt.fpkm".format(sample = sample))
+        
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": input_bams[sample],
@@ -55,3 +57,5 @@ def configure(input_bams, genomon_conf, run_conf, sample_conf):
             singularity_bind += sample_conf.bam_import_src[sample]
             
         stage_class.write_script(arguments, singularity_bind, run_conf, sample = sample)
+
+    return output_files

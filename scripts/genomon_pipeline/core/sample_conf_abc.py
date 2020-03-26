@@ -288,12 +288,20 @@ class Sample_conf_abc(object):
                 err_msg = sampleID + ": " + sequence +  " does not exists"
                 raise ValueError(err_msg)
             
-            sequence_prefix, ext = os.path.splitext(sequence)
+            sequence_prefix, sequence_ext = os.path.splitext(sequence)
+            if sequence_ext == ".bam":
+                bam_index = ".bai"
+            elif sequence_ext == ".cram":
+                bam_index = ".crai"
+            else:
+                err_msg = sampleID + ": " + sequence +  " is unsupported file"
+                raise ValueError(err_msg)
+
             sequence_index = ""
-            if self._exists(sequence + '.bai'):
-                sequence_index = sequence + '.bai'
-            elif self._exists(sequence_prefix + '.bai'):
-                sequence_index = sequence_prefix + '.bai'
+            if self._exists(sequence + bam_index):
+                sequence_index = sequence + bam_index
+            elif self._exists(sequence_prefix + bam_index):
+                sequence_index = sequence_prefix + bam_index
             else:
                 err_msg = sampleID + ": " + sequence +  " index does not exists"
                 raise ValueError(err_msg)

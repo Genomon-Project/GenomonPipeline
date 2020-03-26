@@ -2,6 +2,10 @@
 
 import genomon_pipeline.core.stage_task_abc as stage_task
 
+OUTPUT_FORMAT = "star/{sample}/{sample}.Aligned.sortedByCoord.out.bam"
+BAM_POSTFIX = ".Aligned.sortedByCoord.out.bam"
+BAI_POSTFIX = ".Aligned.sortedByCoord.out.bam.bai"
+    
 class Star_align(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)

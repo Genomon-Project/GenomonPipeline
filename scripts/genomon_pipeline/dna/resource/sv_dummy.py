@@ -20,8 +20,8 @@ set -o nounset
 set -o pipefail
 set -x
 
-mkdir -p {OUTPUT_DIR}
-samtools view {INPUT_BAM} | wc -l > {OUTPUT_DIR}/{SAMPLE}.txt
+mkdir -p $(dirname {OUTPUT_FILE})
+samtools view {INPUT_BAM} | wc -l > {OUTPUT_FILE}
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
@@ -35,13 +35,15 @@ def configure(input_bams, genomon_conf, run_conf, sample_conf):
     }
     stage_class = Sv_dummy(params)
 
+    output_files = []
     for (sample, control, control_panel) in sample_conf.sv_detection:
-        output_dir = "%s/sv/%s" % (run_conf.project_root, sample)
-    
+        output_file = "sv/%s/%s.txt" % (sample, sample)
+        output_files.append(output_file)
+        
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": input_bams[sample],
-            "OUTPUT_DIR": output_dir,
+            "OUTPUT_FILE": "%s/%s" % (run_conf.project_root, output_file),
         }
        
         singularity_bind = [run_conf.project_root]
@@ -49,3 +51,5 @@ def configure(input_bams, genomon_conf, run_conf, sample_conf):
             singularity_bind += sample_conf.bam_import_src[sample]
 
         stage_class.write_script(arguments, singularity_bind, run_conf, sample = sample)
+
+    return output_files

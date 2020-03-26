@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import genomon_pipeline
-import genomon_pipeline.configure
+import genomon_pipeline.configure_if
 import argparse
 
 parser = argparse.ArgumentParser(prog = "genomon_pipeline")
@@ -27,5 +27,5 @@ parser.add_argument("--retry_count", help = "retry count", type = int, default=0
 
 args = parser.parse_args()
 
-genomon_pipeline.configure.main(args)
+genomon_pipeline.configure_if.main(args)
 

@@ -1,27 +1,5 @@
 #! /usr/bin/env python
 
-def dump_conf_yaml(genomon_conf, run_conf, sample_conf):
-    
-    import genomon_pipeline.core.setup_common as setup
-    
-    y = setup.dump_yaml_input_section(
-        genomon_conf, 
-        run_conf,
-        (sample_conf.bam_tofastq_single, sample_conf.bam_tofastq_pair),
-        sample_conf.fastq,
-        sample_conf.bam_import, 
-        "star/{sample}/{sample}.Aligned.sortedByCoord.out.bam"
-    )
-    input_expression = {}
-    for sample in sample_conf.expression:
-        input_expression[sample] = "star/{sample}/{sample}.Aligned.sortedByCoord.out.bam".format(sample = sample)
-        y["output_files"].append("expression/{sample}/{sample}.txt.fpkm".format(sample = sample))
-    
-    y["expression_samples"] = input_expression
-
-    import yaml
-    open(run_conf.project_root + "/config.yml", "w").write(yaml.dump(y))
-    
 def main(genomon_conf, run_conf, sample_conf):
     
     # preparation
@@ -35,7 +13,13 @@ def main(genomon_conf, run_conf, sample_conf):
     linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf.fastq, sample_conf.fastq_src)
     
     # bam import
-    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf.bam_import, '.Aligned.sortedByCoord.out.bam', '.Aligned.sortedByCoord.out.bam.bai', "star")
+    import genomon_pipeline.rna.resource.star_align as rs_align
+    output_bams = setup.link_import_bam(
+        genomon_conf, run_conf, sample_conf.bam_import, 
+        rs_align.BAM_POSTFIX, 
+        rs_align.BAI_POSTFIX, 
+        rs_align.OUTPUT_FORMAT.split("/")[0]
+    )
     
     # bam to fastq
     import genomon_pipeline.rna.resource.bamtofastq_single as rs_bamtofastq_single
@@ -52,13 +36,28 @@ def main(genomon_conf, run_conf, sample_conf):
         sample_conf.fastq[sample] = linked_fastqs[sample]["fastq"]
         sample_conf.fastq_src[sample] = linked_fastqs[sample]["src"]
 
-    import genomon_pipeline.rna.resource.star_align as rs_star_align
-    align_bams = rs_star_align.configure(genomon_conf, run_conf, sample_conf)
+    align_bams = rs_align.configure(genomon_conf, run_conf, sample_conf)
     output_bams.update(align_bams)
 
     # expression
     import genomon_pipeline.rna.resource.expression as rs_expression
-    rs_expression.configure(output_bams, genomon_conf, run_conf, sample_conf)
+    output_expressions = rs_expression.configure(output_bams, genomon_conf, run_conf, sample_conf)
     
     # dump conf.yaml
-    dump_conf_yaml(genomon_conf, run_conf, sample_conf)
+    y = setup.dump_yaml_input_section(
+        genomon_conf, 
+        run_conf,
+        (sample_conf.bam_tofastq_single, sample_conf.bam_tofastq_pair),
+        sample_conf.fastq,
+        sample_conf.bam_import, 
+        rs_align.OUTPUT_FORMAT
+    )
+    y["output_files"].extend(output_expressions)
+    
+    y["expression_samples"] = {}
+    for sample in sample_conf.expression:
+        y["expression_samples"][sample] = rs_align.OUTPUT_FORMAT.format(sample=sample)
+        
+    import yaml
+    open(run_conf.project_root + "/config.yml", "w").write(yaml.dump(y))
+    

@@ -2,7 +2,7 @@
 
 import genomon_pipeline.core.stage_task_abc as stage_task
 
-class Mutation_dummy(stage_task.Stage_task):
+class Haplotypecaller(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)
         self.shell_script_template = """
@@ -20,30 +20,40 @@ set -o nounset
 set -o pipefail
 set -x
 
-mkdir -p $(dirname {OUTPUT_FILE})
-samtools view -H {INPUT_BAM} > {OUTPUT_FILE}
+/usr/bin/java \
+  -XX:-UseContainerSupport \
+  -Xmx30g \
+  -jar /tools/gatk-4.0.4.0/gatk-package-4.0.4.0-local.jar HaplotypeCaller \
+  -I=${INPUT_CRAM} \
+  -O=${OUTPUT_VCF} \
+  -R=${REFERENCE} \
+  --native-pair-hmm-threads=$(nproc) \
+  --TMP_DIR=$(dirname ${OUTPUT_VCF})
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
 def configure(input_bams, genomon_conf, run_conf, sample_conf):
+    
+    STAGE_NAME = "gatk-haplotypecaller-parabrics-compatible"
+    CONF_SECTION = STAGE_NAME
     params = {
         "work_dir": run_conf.project_root,
-        "stage_name": "mutation_dummy",
-        "image": genomon_conf.get("mutation_dummy", "image"),
-        "qsub_option": genomon_conf.get("mutation_dummy", "qsub_option"),
-        "singularity_option": genomon_conf.get("mutation_dummy", "singularity_option")
+        "stage_name": STAGE_NAME,
+        "image": genomon_conf.get(CONF_SECTION, "image"),
+        "qsub_option": genomon_conf.get(CONF_SECTION, "qsub_option"),
+        "singularity_option": genomon_conf.get(CONF_SECTION, "singularity_option")
     }
-    stage_class = Mutation_dummy(params)
+    stage_class = Haplotypecaller(params)
     
     output_files = []
-    for (sample, control, control_panel) in sample_conf.mutation_call:
-        output_file = "mutation/%s/%s.txt" % (sample, sample)
-        output_files.append(output_file)
-        
+    for sample in sample_conf.haplotype_call:
+        output_vcf = "haplotypecaller/%s/%s.gatk-hc.vcf" % (sample, sample)
+        output_files.append(output_vcf)
         arguments = {
             "SAMPLE": sample,
-            "INPUT_BAM": input_bams[sample],
-            "OUTPUT_FILE": "%s/%s" % (run_conf.project_root, output_file),
+            "INPUT_CRAM": input_bams[sample],
+            "OUTPUT_VCF":  "%s/%s" % (run_conf.project_root, output_vcf),
+            "REFERENCE": genomon_conf.path_get(CONF_SECTION, "reference"),
         }
        
         singularity_bind = [run_conf.project_root]

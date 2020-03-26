@@ -3,9 +3,14 @@
 import os
 import genomon_pipeline.core.stage_task_abc as stage_task
 
+OUTPUT_FORMAT = "bam/{sample}/{sample}.markdup.bam"
+BAM_POSTFIX = ".markdup.bam"
+BAI_POSTFIX = ".markdup.bam.bai"
+        
 class Bwa_align(stage_task.Stage_task):
     def __init__(self, params):
         super().__init__(params)
+
         self.shell_script_template = """
 #!/bin/bash
 #
