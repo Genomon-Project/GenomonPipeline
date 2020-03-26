@@ -8,7 +8,7 @@ rule bam_tofastq:
     input:
         "bam_tofastq/{sample}/{sample}.txt"
     output:
-        "fastq/{sample}/pass.tx"
+        "fastq/{sample}/pass.txt"
     params:
         script = "script/{sample}/singularity_bam_tofastq.sh",
         yaml = "script/{sample}/conf_bam_tofastq.yml"

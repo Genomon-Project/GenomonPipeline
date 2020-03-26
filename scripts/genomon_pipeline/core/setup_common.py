@@ -44,6 +44,7 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
     for sample in fastq_stage:
         fastq_dir = run_conf.project_root + '/fastq/' + sample
         os.makedirs(fastq_dir, exist_ok=True)
+        open("%s/pass.txt" % (fastq_dir), "w").close()
         pair = len(fastq_stage[sample]) > 1
             
         new_fastq_src = []
