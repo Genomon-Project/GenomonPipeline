@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import genomon_pipeline.core.stage_task_abc as stage_task
 
 class Haplotypecaller(stage_task.Stage_task):
@@ -20,15 +21,15 @@ set -o nounset
 set -o pipefail
 set -x
 
-/usr/bin/java \
-  -XX:-UseContainerSupport \
-  -Xmx30g \
-  -jar /tools/gatk-4.0.4.0/gatk-package-4.0.4.0-local.jar HaplotypeCaller \
-  -I=${INPUT_CRAM} \
-  -O=${OUTPUT_VCF} \
-  -R=${REFERENCE} \
-  --native-pair-hmm-threads=$(nproc) \
-  --TMP_DIR=$(dirname ${OUTPUT_VCF})
+/usr/bin/java \\
+  -XX:-UseContainerSupport \\
+  -Xmx30g \\
+  -jar /tools/gatk-4.0.4.0/gatk-package-4.0.4.0-local.jar HaplotypeCaller \\
+  -I={INPUT_CRAM} \\
+  -O={OUTPUT_VCF} \\
+  -R={REFERENCE} \\
+  --native-pair-hmm-threads=$(nproc) \\
+  --TMP_DIR=$(dirname {OUTPUT_VCF})
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
@@ -56,7 +57,7 @@ def configure(input_bams, genomon_conf, run_conf, sample_conf):
             "REFERENCE": genomon_conf.path_get(CONF_SECTION, "reference"),
         }
        
-        singularity_bind = [run_conf.project_root]
+        singularity_bind = [run_conf.project_root, os.path.dirname(genomon_conf.path_get(CONF_SECTION, "reference"))]
         if sample in sample_conf.bam_import_src:
             singularity_bind += sample_conf.bam_import_src[sample]
             

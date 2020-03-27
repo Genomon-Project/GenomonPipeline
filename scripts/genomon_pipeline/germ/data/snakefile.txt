@@ -21,8 +21,8 @@ rule fq2cram:
     output:
         "cram/{sample}/{sample}.markdup.cram"
     params:
-        script = "script/{sample}/singularity_fq2cram.sh",
-        yaml = "script/{sample}/conf_fq2cram.yml"
+        script = "script/{sample}/singularity_bwa-alignment-parabrics-compatible.sh",
+        yaml = "script/{sample}/conf_bwa-alignment-parabrics-compatible.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 
@@ -32,8 +32,8 @@ rule haplotypecaller:
     output:
         "haplotypecaller/{sample}/{sample}.gatk-hc.vcf"
     params:
-        script = "script/{sample}/singularity_haplotypecaller.sh",
-        yaml = "script/{sample}/conf_haplotypecaller.yml"
+        script = "script/{sample}/singularity_gatk-haplotypecaller-parabrics-compatible.sh",
+        yaml = "script/{sample}/conf_gatk-haplotypecaller-parabrics-compatible.yml"
     shell:
         "genomon_runner {params.script} {params.yaml}"
 
