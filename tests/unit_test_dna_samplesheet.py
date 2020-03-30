@@ -56,11 +56,14 @@ class SubmitTest(unittest.TestCase):
         ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
+A_tumor_2,{sample_dir}/A1.fastq;{sample_dir}/A1.fastq,{sample_dir}/A2.fastq;{sample_dir}/A2.fastq,,
 pool1,{sample_dir}/B1.fq,{sample_dir}/B2.fq,,
 pool2,{sample_dir}/C1_1.fq;{sample_dir}/C1_2.fq,{sample_dir}/C2_1.fq;{sample_dir}/C2_2.fq,,
 ,,,,
 [bam_tofastq],,,,
 A_control,{sample_dir}/A.markdup.bam,,,
+A_control_2,{sample_dir}/A.markdup.bam;{sample_dir}/A.markdup.bam,,,
+
 [bam_import],,,,
 pool3,{sample_dir}/B.markdup.bam,,,
 ,,,,
@@ -73,7 +76,9 @@ A_tumor,A_control,list1,,
 ,,,,
 [qc],,,,
 A_tumor,,,,
+A_tumor_2,,,,
 A_control,,,,
+A_control_2,,,,
 pool1,,,,
 pool2,,,,
 pool3,,,,
@@ -89,23 +94,34 @@ list1,pool1,pool2,pool3
         
         self.assertEqual(sample_conf.fastq, {
             'A_tumor': [[self.SAMPLE_DIR + '/A1.fastq'], [self.SAMPLE_DIR + '/A2.fastq']], 
+            'A_tumor_2': [[self.SAMPLE_DIR + '/A1.fastq',self.SAMPLE_DIR + '/A1.fastq'], [self.SAMPLE_DIR + '/A2.fastq',self.SAMPLE_DIR + '/A2.fastq']], 
             'pool1': [[self.SAMPLE_DIR + '/B1.fq'], [self.SAMPLE_DIR + '/B2.fq']], 
             'pool2': [[self.SAMPLE_DIR + '/C1_1.fq', self.SAMPLE_DIR + '/C1_2.fq'], [self.SAMPLE_DIR + '/C2_1.fq', self.SAMPLE_DIR + '/C2_2.fq']]
         })
-
+        #import pprint
+        #pprint.pprint(sample_conf.fastq_src)
         self.assertEqual(sample_conf.fastq_src, {
             'A_tumor': [self.SAMPLE_DIR + '/A1.fastq', self.SAMPLE_DIR + '/A2.fastq'], 
+            'A_tumor_2': [self.SAMPLE_DIR + '/A1.fastq', self.SAMPLE_DIR + '/A2.fastq', self.SAMPLE_DIR + '/A1.fastq', self.SAMPLE_DIR + '/A2.fastq'], 
             'pool1': [self.SAMPLE_DIR + '/B1.fq', self.SAMPLE_DIR + '/B2.fq'], 
             'pool2': [self.SAMPLE_DIR + '/C1_1.fq', self.SAMPLE_DIR + '/C2_1.fq', self.SAMPLE_DIR + '/C1_2.fq', self.SAMPLE_DIR + '/C2_2.fq']
         })
-
-        self.assertEqual(sample_conf.bam_tofastq, {'A_control': self.SAMPLE_DIR + '/A.markdup.bam'})
-        self.assertEqual(sample_conf.bam_tofastq_src, {'A_control': [self.SAMPLE_DIR + '/A.markdup.bam']})
+        
+        #pprint.pprint(sample_conf.bam_tofastq)
+        self.assertEqual(sample_conf.bam_tofastq, {
+            'A_control': self.SAMPLE_DIR + '/A.markdup.bam',
+            'A_control_2': self.SAMPLE_DIR + '/A.markdup.bam;' + self.SAMPLE_DIR + '/A.markdup.bam'
+        })
+        #pprint.pprint(sample_conf.bam_tofastq_src)
+        self.assertEqual(sample_conf.bam_tofastq_src, {
+            'A_control': [self.SAMPLE_DIR + '/A.markdup.bam'],
+            'A_control_2': [self.SAMPLE_DIR + '/A.markdup.bam', self.SAMPLE_DIR + '/A.markdup.bam'],
+        })
         self.assertEqual(sample_conf.bam_import, {'pool3': self.SAMPLE_DIR + '/B.markdup.bam'})
         self.assertEqual(sample_conf.bam_import_src, {'pool3': [self.SAMPLE_DIR + '/B.markdup.bam', self.SAMPLE_DIR + '/B.markdup.bai']})
         self.assertEqual(sample_conf.mutation_call, [('A_tumor', 'A_control', 'list1'), ('A_control', None, None)])
         self.assertEqual(sample_conf.sv_detection, [('A_tumor', 'A_control', 'list1')])
-        self.assertEqual(sample_conf.qc, ['A_tumor', 'A_control', 'pool1', 'pool2', 'pool3'])
+        self.assertEqual(sample_conf.qc, ['A_tumor', 'A_tumor_2', 'A_control', 'A_control_2', 'pool1', 'pool2', 'pool3'])
         self.assertEqual(sample_conf.control_panel, {'list1': ['pool1', 'pool2', 'pool3']})
 
     # --------------------------------------------------------------------

@@ -50,23 +50,30 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
         new_fastq_src = []
         new_fastq_src += fastq_stage_src[sample]
         new_fastq_src += fastq_stage[sample][0]
+
         if pair:
             new_fastq_src += fastq_stage[sample][1]
 
-        linked_fastq[sample] = {"fastq": [[], []], "src": new_fastq_src}
-        
-        for (count, fastq_files) in enumerate(fastq_stage[sample][0]):
-            fastq_prefix, ext = os.path.splitext(fastq_files)
-            r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
-            linked_fastq[sample]["fastq"][0] += [r1]
-            if not os.path.exists(r1):
-                os.symlink(fastq_stage[sample][0][count], r1)
-            
-            if pair:
+            linked_fastq[sample] = {"fastq": [[], []], "src": new_fastq_src}
+            for (count, fastq_files) in enumerate(fastq_stage[sample][0]):
+                fastq_prefix, ext = os.path.splitext(fastq_files)
+                r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
                 r2 = fastq_dir + '/'+str(count+1)+'_2'+ ext
+                linked_fastq[sample]["fastq"][0] += [r1]
                 linked_fastq[sample]["fastq"][1] += [r2]
+                if not os.path.exists(r1):
+                    os.symlink(fastq_stage[sample][0][count], r1)
                 if not os.path.exists(r2):
                     os.symlink(fastq_stage[sample][1][count], r2)
+
+        else:
+            linked_fastq[sample] = {"fastq": [[]], "src": new_fastq_src}
+            for (count, fastq_files) in enumerate(fastq_stage[sample][0]):
+                fastq_prefix, ext = os.path.splitext(fastq_files)
+                r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
+                linked_fastq[sample]["fastq"][0] += [r1]
+                if not os.path.exists(r1):
+                    os.symlink(fastq_stage[sample][0][count], r1)
 
     return linked_fastq
 

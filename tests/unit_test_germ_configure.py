@@ -86,6 +86,7 @@ qsub_option = -l s_vmem=10.6G,mem_req=10.6G -l os7
 image = {sample_dir}/image/YYY.simg
 singularity_option = 
 reference = {sample_dir}/reference/XXX.fa
+remove_fastq = True
 
 [{ht_call}]
 qsub_option = -l s_vmem=5.3G,mem_req=5.3G -l os7

@@ -24,7 +24,6 @@ mkdir -p $(dirname {OUTPUT_FILE})
 samtools view {INPUT_BAM} | wc -l > {OUTPUT_FILE}
 """
 
-# merge sorted bams into one and mark duplicate reads with biobambam
 def configure(input_bams, genomon_conf, run_conf, sample_conf):
     params = {
         "work_dir": run_conf.project_root,

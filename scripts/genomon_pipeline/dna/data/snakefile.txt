@@ -48,6 +48,39 @@ rule sv:
     shell:
         "genomon_runner {params.script} {params.yaml}"
 
+rule qc_bamstats:
+    input:
+        lambda wildcards: config["qc_samples"][wildcards.sample]
+    output:
+        "qc/{sample}/{sample}.bamstats"
+    params:
+        script = "script/{sample}/singularity_qc_bamstats.sh",
+        yaml = "script/{sample}/conf_qc_bamstats.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
+rule qc_coverage:
+    input:
+        lambda wildcards: config["qc_samples"][wildcards.sample]
+    output:
+        "qc/{sample}/{sample}.coverage"
+    params:
+        script = "script/{sample}/singularity_qc_coverage.sh",
+        yaml = "script/{sample}/conf_qc_coverage.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
+rule qc_merge:
+    input:
+        lambda wildcards: config["qc_merge_samples"][wildcards.sample],
+    output:
+        "qc/{sample}/{sample}.genomonQC.result.txt"
+    params:
+        script = "script/{sample}/singularity_qc_merge.sh",
+        yaml = "script/{sample}/conf_qc_merge.yml"
+    shell:
+        "genomon_runner {params.script} {params.yaml}"
+
 rule join:
     input:
         ["{dataset}".format(dataset=dataset) for dataset in config["output_files"]]

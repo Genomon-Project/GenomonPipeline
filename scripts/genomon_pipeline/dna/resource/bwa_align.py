@@ -30,6 +30,9 @@ export LD_LIBRARY_PATH=/usr/local/lib
 OUTPUT_PREF={OUTPUT_DIR}/{SAMPLE}
 mkdir -p {OUTPUT_DIR}
 
+# cat fastq
+{cat_fastq}
+
 /tools/bwa-0.7.17/bwa mem \
   {BWA_OPTION} \
   {REFERENCE} \
@@ -50,6 +53,9 @@ mkdir -p {OUTPUT_DIR}
 
 rm ${{OUTPUT_PREF}}.sorted.bam
 rm ${{OUTPUT_PREF}}.sorted.bam.bai
+
+# remove fastq
+{remove_fastq}
 """
 
 # merge sorted bams into one and mark duplicate reads with biobambam
@@ -65,25 +71,45 @@ def configure(genomon_conf, run_conf, sample_conf):
         "singularity_option": genomon_conf.get(CONF_SECTION, "singularity_option")
     }
     stage_class = Bwa_align(params)
-     
+    
     output_bams = {}
     for sample in sample_conf.fastq:
         output_dir = "%s/bam/%s" % (run_conf.project_root, sample)
         output_bams[sample] = "%s/%s.markdup.bam" % (output_dir, sample)
         
+        cat_fastq = ""
+        remove_fastq = ""
         if len(sample_conf.fastq[sample][0]) == 1:
             fastq1 = sample_conf.fastq[sample][0][0]
-        else:
-            fastq1 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][0]))
-
-        if len(sample_conf.fastq[sample][1]) == 1:
             fastq2 = sample_conf.fastq[sample][1][0]
+
+            if genomon_conf.get(CONF_SECTION, "remove_fastq"):
+                remove_fastq += "rm %s\n" % (fastq1)
+                remove_fastq += "rm %s\n" % (fastq2)
+
         else:
-            fastq2 = "'<cat %s'" % (" ".join(sample_conf.fastq[sample][0]))
+            cat_fastq += "cat {FASTQ1s} > {OUTPUT_DIR}/1_1_temp.fastq\n".format(
+                FASTQ1s = " ".join(sample_conf.fastq[sample][0]),
+                OUTPUT_DIR = output_dir
+            )
+            cat_fastq += "cat {FASTQ2s} > {OUTPUT_DIR}/2_1_temp.fastq\n".format(
+                FASTQ2s = " ".join(sample_conf.fastq[sample][1]),
+                OUTPUT_DIR = output_dir
+            )
+            fastq1 = "{OUTPUT_DIR}/1_1_temp.fastq".format(OUTPUT_DIR = output_dir)
+            fastq2 = "{OUTPUT_DIR}/2_1_temp.fastq".format(OUTPUT_DIR = output_dir)
+
+            if genomon_conf.get(CONF_SECTION, "remove_fastq"):
+                remove_fastq += "rm %s\n" % (" ".join(sample_conf.fastq[sample][0]))
+                remove_fastq += "rm %s\n" % (" ".join(sample_conf.fastq[sample][1]))
+                remove_fastq += "rm %s\n" % (fastq1)
+                remove_fastq += "rm %s\n" % (fastq2)
 
         arguments = {
             "SAMPLE": sample,
             "INPUT_BAM": sample_conf.fastq[sample],
+            "cat_fastq": cat_fastq,
+            "remove_fastq": remove_fastq,
             "FASTQ1": fastq1,
             "FASTQ2": fastq2,
             "OUTPUT_DIR": output_dir,

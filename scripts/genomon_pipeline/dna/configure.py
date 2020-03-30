@@ -39,6 +39,14 @@ def main(genomon_conf, run_conf, sample_conf):
     import genomon_pipeline.dna.resource.sv_dummy as rs_sv
     output_svs = rs_sv.configure(output_bams, genomon_conf, run_conf, sample_conf)
     
+    # qc
+    import genomon_pipeline.dna.resource.qc_bamstats as rs_qc_bamstats
+    output_bamstats = rs_qc_bamstats.configure(output_bams, genomon_conf, run_conf, sample_conf)
+    import genomon_pipeline.dna.resource.qc_coverage as rs_qc_coverage
+    output_coverage = rs_qc_coverage.configure(output_bams, genomon_conf, run_conf, sample_conf)
+    import genomon_pipeline.dna.resource.qc_merge as rs_qc_merge
+    output_qc = rs_qc_merge.configure(output_bams, genomon_conf, run_conf, sample_conf)
+
     # dump conf.yaml
     y = setup.dump_yaml_input_section(
         genomon_conf, 
@@ -58,7 +66,13 @@ def main(genomon_conf, run_conf, sample_conf):
     y["sv_samples"] = {}
     for (sample, control, control_panel) in sample_conf.sv_detection:
         y["sv_samples"][sample] = rs_align.OUTPUT_FORMAT.format(sample=sample)
-        
+
+    y["qc_samples"] = {}
+    y["qc_merge"] = {}
+    for sample in sample_conf.qc:
+        y["qc_samples"][sample] = rs_align.OUTPUT_FORMAT.format(sample=sample)
+        y["qc_merge"][sample] = ["qc/%s/%s.coverage" % (sample, sample), "qc/%s/%s.bamstats" % (sample, sample)]
+
     import yaml
     open(run_conf.project_root + "/config.yml", "w").write(yaml.dump(y))
     

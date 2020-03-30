@@ -100,6 +100,7 @@ image = {sample_dir}/image/YYY.simg
 singularity_option = 
 star_option = --runThreadN 6 --outSAMstrandField intronMotif --outSAMunmapped Within --alignMatesGapMax 500000 --alignIntronMax 500000 --alignSJstitchMismatchNmax -1 -1 -1 -1 --outSJfilterDistToOtherSJmin 0 0 0 0 --outSJfilterOverhangMin 12 12 12 12 --outSJfilterCountUniqueMin 1 1 1 1 --outSJfilterCountTotalMin 1 1 1 1 --chimSegmentMin 12 --chimJunctionOverhangMin 12 --outSAMtype BAM Unsorted
 star_genome = {sample_dir}/reference
+remove_fastq = True
 
 [expression]
 qsub_option = -l s_vmem=5.3G,mem_req=5.3G -l os7
