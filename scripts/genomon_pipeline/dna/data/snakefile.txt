@@ -72,7 +72,7 @@ rule qc_coverage:
 
 rule qc_merge:
     input:
-        lambda wildcards: config["qc_merge_samples"][wildcards.sample],
+        lambda wildcards: config["qc_merge"][wildcards.sample],
     output:
         "qc/{sample}/{sample}.genomonQC.result.txt"
     params:

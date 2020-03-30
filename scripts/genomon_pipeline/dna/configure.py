@@ -58,6 +58,9 @@ def main(genomon_conf, run_conf, sample_conf):
     )
     y["output_files"].extend(output_mutations)
     y["output_files"].extend(output_svs)
+    y["output_files"].extend(output_bamstats)
+    y["output_files"].extend(output_coverage)
+    y["output_files"].extend(output_qc)
     
     y["mutation_samples"] = {}
     for (sample, control, control_panel) in sample_conf.mutation_call:

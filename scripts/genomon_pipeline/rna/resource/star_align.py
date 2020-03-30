@@ -81,7 +81,7 @@ def configure(genomon_conf, run_conf, sample_conf):
             if paired:
                 fastq2 = sample_conf.fastq[sample][1][0]
 
-            if genomon_conf.get(SECTION_NAME, "remove_fastq"):
+            if genomon_conf.get(SECTION_NAME, "remove_fastq") == "T":
                 remove_fastq += "rm %s\n" % (fastq1)
                 if paired:
                     remove_fastq += "rm %s\n" % (fastq2)
@@ -99,7 +99,7 @@ def configure(genomon_conf, run_conf, sample_conf):
                 )
                 fastq2 = "{OUTPUT_DIR}/2_1_temp.fastq".format(OUTPUT_DIR = output_dir)
 
-            if genomon_conf.get(SECTION_NAME, "remove_fastq"):
+            if genomon_conf.get(SECTION_NAME, "remove_fastq") == "T":
                 remove_fastq += "rm %s\n" % (" ".join(sample_conf.fastq[sample][0]))
                 remove_fastq += "rm %s\n" % (fastq1)
                 if paired:

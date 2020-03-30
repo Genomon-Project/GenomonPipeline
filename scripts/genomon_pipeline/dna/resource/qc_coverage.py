@@ -23,14 +23,14 @@ set -o pipefail
 export bedtools=/usr/local/bin/bedtools
 export samtools=/usr/local/bin/samtools
 
-if [ {data_type} = "wgs" ]
+if [ "{data_type}" = "wgs" ]
 then
 ########## WGS ##########
-genomon_qc wgs {input_file} {output_file} --genome_size_file {genome_size_file} --gaptxt {gaptxt} --incl_bed_width {incl_bed_width} --i_bed_lines {i_bed_lines} --i_bed_width {i_bed_width} --bedtools $bedtools --samtools $samtools --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
+genomon_qc wgs {input_file} {output_file} --genome_size_file {genome_size_file} --gaptxt {gaptxt} --incl_bed_width {incl_bed_width} --i_bed_lines {i_bed_lines} --i_bed_width {i_bed_width} --bedtools $bedtools --samtools $samtools --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile
 
 else
 ########## exome ##########
-genomon_qc exome {input_file} {output_file} --bait_file {bait_file} --bedtools $bedtools --samtools $samtools --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile True
+genomon_qc exome {input_file} {output_file} --bait_file {bait_file} --bedtools $bedtools --samtools $samtools --samtools_params "{samtools_params}" --coverage_text {coverage_text} --del_tempfile
 fi
 """
 
