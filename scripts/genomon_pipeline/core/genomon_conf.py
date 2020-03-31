@@ -93,6 +93,9 @@ class Genomon_conf(object):
     def get(self, section, option):
         return self.genomon_conf.get(section, option)
 
+    def getboolean(self, section, option):
+        return self.genomon_conf.getboolean(section, option)
+
     def path_get(self, section, option):
         path = self.genomon_conf.get(section, option)
         if self.exist_check and not os.path.exists(path):
