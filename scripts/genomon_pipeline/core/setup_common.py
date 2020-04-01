@@ -44,7 +44,9 @@ def link_input_fastq(run_conf, fastq_stage, fastq_stage_src):
     for sample in fastq_stage:
         fastq_dir = run_conf.project_root + '/fastq/' + sample
         os.makedirs(fastq_dir, exist_ok=True)
-        open("%s/pass.txt" % (fastq_dir), "w").close()
+        pass_txt = "%s/pass.txt" % (fastq_dir)
+        if not os.path.exists(pass_txt):
+            open(pass_txt, "w").close()
         pair = len(fastq_stage[sample]) > 1
             
         new_fastq_src = []
@@ -93,7 +95,6 @@ def link_import_bam(run_conf, bam_import_stage, bam_postfix, bai_postfix, subdir
         link = link_dir +'/'+ sample + bam_postfix
         link_bai = link_dir +'/'+ sample + bai_postfix
         linked_bam[sample] = link
-        
         if not os.path.exists(link):
             os.symlink(bam, link)
         if not os.path.exists(link_bai): 

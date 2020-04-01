@@ -17,8 +17,8 @@ rule bam_tofastq:
 
 rule fastq:
     input:
-        lambda wildcards: config["fastq_r1"][wildcards.sample],
-        lambda wildcards: config["fastq_r2"][wildcards.sample]
+        r1=lambda wildcards: config["fastq_r1"][wildcards.sample],
+        r2=lambda wildcards: config["fastq_r2"][wildcards.sample]
     output:
         "fastq/{sample}/pass.txt"
     run:
@@ -26,12 +26,16 @@ rule fastq:
         import os
         link_dir = 'fastq/%s' % (sample)
         os.makedirs(link_dir, exist_ok=True)
-        for (r, onside_fastq) in enumerate(input):
-            for (count, target_fastq) in enumerate(onside_fastq):
-                fastq_prefix, ext = os.path.splitext(target_fastq)
-                link = '%s/%d_%d%s' % (link_dir, count+1, r+1, ext)
-                if not os.path.exists(link):
-                    os.symlink(target_fastq, link)
+        for (count, target_fastq) in enumerate(input.r1):
+            fastq_prefix, ext = os.path.splitext(target_fastq)
+            link = '%s/%d_%d%s' % (link_dir, count+1, 1, ext)
+            if not os.path.exists(link):
+                os.symlink(target_fastq, link)
+        for (count, target_fastq) in enumerate(input.r2):
+            fastq_prefix, ext = os.path.splitext(target_fastq)
+            link = '%s/%d_%d%s' % (link_dir, count+1, 2, ext)
+            if not os.path.exists(link):
+                os.symlink(target_fastq, link)
         open(output[0], "w").close()
 
 rule bam_import:
@@ -58,8 +62,9 @@ rule bam_import:
         linked_bam = link_dir +'/'+ sample + bam_postfix
         linked_bai = link_dir +'/'+ sample + bai_postfix
 
-        if (not os.path.exists(linked_bam)) and (not os.path.exists(linked_bai)):
+        if not os.path.exists(linked_bam):
             os.symlink(bam, linked_bam)
+        if not os.path.exists(linked_bai):
             if (os.path.exists(bam + bai)):
                 os.symlink(bam + bai, linked_bai)
             elif (os.path.exists(prefix + bai)):

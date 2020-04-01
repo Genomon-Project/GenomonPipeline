@@ -15,7 +15,7 @@ def main(args):
     run_conf.genomon_conf_file = args.genomon_conf_file
     run_conf.drmaa = False if args.disable_drmaa else True
     run_conf.retry_count = args.retry_count
-    
+
     # disable params
     # - args.multiprocess
     # - args.param_check
