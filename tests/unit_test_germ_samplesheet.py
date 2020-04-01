@@ -19,7 +19,7 @@ HT_CALL = "gatk-haplotypecaller-parabrics-compatible"
 
 class SubmitTest(unittest.TestCase):
     
-    SAMPLE_DIR = "/tmp/genomon_test_germ_samplesheet"
+    SAMPLE_DIR = "/tmp/temp-test/genomon_test_germ_samplesheet"
     REMOVE = True
     
     # init class
@@ -58,7 +58,7 @@ class SubmitTest(unittest.TestCase):
         pass
     
     def test1_01_allinone(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
 pool1,{sample_dir}/B1.fq,{sample_dir}/B2.fq
@@ -105,7 +105,7 @@ pool3
     # Not Exist
     # --------------------------------------------------------------------
     def test2_01_not_exists(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A3.fastq,,
 pool1,{sample_dir}/B1.fq,{sample_dir}/B2.fq,,
@@ -125,7 +125,7 @@ pool2,{sample_dir}/C1_1.fq;{sample_dir}/C1_2.fq,{sample_dir}/C2_1.fq;{sample_dir
         self.assertTrue(fail)
 
     def test2_02_not_exists(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 pool1,{sample_dir}/B1.fq,{sample_dir}/B3.fq,,
@@ -145,7 +145,7 @@ pool2,{sample_dir}/C1_1.fq;{sample_dir}/C1_2.fq,{sample_dir}/C2_1.fq;{sample_dir
         self.assertTrue(fail)
 
     def test2_03_not_exists(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 pool1,{sample_dir}/B1.fq,{sample_dir}/B2.fq,,
@@ -165,7 +165,7 @@ pool2,{sample_dir}/C1_1.fq;{sample_dir}/C1_2.fq,{sample_dir}/C2_1.fq;{sample_dir
         self.assertTrue(fail)
 
     def test2_04_not_exists(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bam2fq}],,,,
 A_control,{sample_dir}/X.markdup.cram,,,
 """.format(sample_dir = self.SAMPLE_DIR, bam2fq = BAM_2FQ)
@@ -183,7 +183,7 @@ A_control,{sample_dir}/X.markdup.cram,,,
         self.assertTrue(fail)
 
     def test2_05_not_exists(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bamimp}],,,,
 pool3,{sample_dir}/X.markdup.cram,,,
 """.format(sample_dir = self.SAMPLE_DIR, bamimp = BAM_IMP)
@@ -204,7 +204,7 @@ pool3,{sample_dir}/X.markdup.cram,,,
     # Not defined
     # --------------------------------------------------------------------
     def test3_03_undefine(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
 
@@ -228,7 +228,7 @@ B_tumor
     # Duplicate
     # --------------------------------------------------------------------
     def test4_01_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
@@ -247,7 +247,7 @@ A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
         self.assertTrue(fail)
 
     def test4_02_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bam2fq}]
 A_control,{sample_dir}/A.markdup.cram
 A_control,{sample_dir}/A.markdup.cram
@@ -266,7 +266,7 @@ A_control,{sample_dir}/A.markdup.cram
         self.assertTrue(fail)
 
     def test4_03_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bamimp}],,,,
 pool3,{sample_dir}/B.markdup.cram,,,
 pool3,{sample_dir}/B.markdup.cram,,,
@@ -285,7 +285,7 @@ pool3,{sample_dir}/B.markdup.cram,,,
         self.assertTrue(fail)
 
     def test4_04_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 [{bam2fq}],,,,
@@ -307,7 +307,7 @@ pool1,{sample_dir}/B.markdup.cram,,,
         self.assertTrue(fail)
 
     def test4_05_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 [{bam2fq}],,,,
@@ -329,7 +329,7 @@ pool3,{sample_dir}/B.markdup.cram,,,
         self.assertTrue(fail)
 
     def test4_06_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 pool3,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,,
 [{bam2fq}],,,,
@@ -351,7 +351,7 @@ pool3,{sample_dir}/B.markdup.cram,,,
         self.assertTrue(fail)
 
     def test4_08_duplicate(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
 
@@ -376,7 +376,7 @@ A_tumor
     # Format error
     # --------------------------------------------------------------------
     def test5_01_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq
 """.format(sample_dir = self.SAMPLE_DIR)
@@ -394,7 +394,7 @@ A_tumor,{sample_dir}/A1.fastq
         self.assertTrue(fail)
 
     def test5_02_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[fastq],,,,
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,{sample_dir}/A2.fastq
 """.format(sample_dir = self.SAMPLE_DIR)
@@ -412,7 +412,7 @@ A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,{sample_dir}/A2.fastq
         self.assertTrue(fail)
 
     def test5_03_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bam2fq}]
 {sample_dir}/A.markdup.cram
 """.format(sample_dir = self.SAMPLE_DIR, bam2fq = BAM_2FQ)
@@ -430,7 +430,7 @@ A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq,{sample_dir}/A2.fastq
         self.assertTrue(fail)
 
     def test5_04_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bam2fq}]
 A_tumor,{sample_dir}/A.markdup.cram,{sample_dir}/B.markdup.cram
 """.format(sample_dir = self.SAMPLE_DIR, bam2fq = BAM_2FQ)
@@ -448,7 +448,7 @@ A_tumor,{sample_dir}/A.markdup.cram,{sample_dir}/B.markdup.cram
         self.assertTrue(fail)
 
     def test5_05_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bamimp}]
 {sample_dir}/B.markdup.cram
 """.format(sample_dir = self.SAMPLE_DIR, bamimp = BAM_IMP)
@@ -466,7 +466,7 @@ A_tumor,{sample_dir}/A.markdup.cram,{sample_dir}/B.markdup.cram
         self.assertTrue(fail)
 
     def test5_06_unformat(self):
-        ss_path = self.SAMPLE_DIR + sys._getframe().f_code.co_name + ".csv"
+        ss_path = self.SAMPLE_DIR + "/" + sys._getframe().f_code.co_name + ".csv"
         data = """[{bamimp}]
 A_tumor,{sample_dir}/A.markdup.cram,{sample_dir}/B.markdup.cram
 """.format(sample_dir = self.SAMPLE_DIR, bamimp = BAM_IMP)

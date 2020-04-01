@@ -12,11 +12,15 @@ import shutil
 import unittest
 import subprocess
 import snakemake
-import tools
+
+def func_path (root, name):
+    wdir = root + "/" + name
+    ss_path = root + "/" + name + ".csv"
+    return (wdir, ss_path)
 
 class ConfigureTest(unittest.TestCase):
     
-    DATA_DIR = "/tmp/genomon_test_rna_configure"
+    DATA_DIR = "/tmp/temp-test/genomon_test_rna_configure"
     SAMPLE_DIR = DATA_DIR + "/samples"
     REMOVE = False
     SS_NAME = "/test.csv"
@@ -134,7 +138,7 @@ gtf = {sample_dir}/reference/ZZZ.gtf
         subprocess.check_call(['python', 'genomon_runner', '--version'])
     
     def test2_01_configure(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         options = [
             "rna",
             self.DATA_DIR + self.SS_NAME,
@@ -146,7 +150,7 @@ gtf = {sample_dir}/reference/ZZZ.gtf
         self.assertTrue(success)
 
     def test2_02_configure(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
 
         options = [
             "rna",
@@ -160,7 +164,7 @@ gtf = {sample_dir}/reference/ZZZ.gtf
         self.assertTrue(success)
 
     def test3_01_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
@@ -180,7 +184,7 @@ A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
         self.assertTrue(success)
 
     def test3_02_1_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_tofastq_single]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
@@ -200,7 +204,7 @@ A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
         self.assertTrue(success)
 
     def test3_02_2_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_tofastq_pair]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
@@ -220,7 +224,7 @@ A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
         self.assertTrue(success)
 
     def test3_03_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
 
         data_sample = """[bam_import]
@@ -242,7 +246,7 @@ A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
 
 
     def test4_01_fusion_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
@@ -264,7 +268,7 @@ A_tumor,None
         self.assertTrue(success)
 
     def test4_02_fusion_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_tofastq_single]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
@@ -286,7 +290,7 @@ A_tumor,None
         self.assertTrue(success)
 
     def test4_03_fusion_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_import]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
@@ -309,7 +313,7 @@ A_tumor,None
 
 
     def test5_01_exp_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
@@ -331,7 +335,7 @@ A_tumor
         self.assertTrue(success)
 
     def test5_02_exp_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_tofastq_single]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam
@@ -353,7 +357,7 @@ A_tumor
         self.assertTrue(success)
 
     def test5_03_exp_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[bam_import]
 A_tumor,{sample_dir}/A.Aligned.sortedByCoord.out.bam

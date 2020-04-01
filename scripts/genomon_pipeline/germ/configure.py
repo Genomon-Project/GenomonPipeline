@@ -6,20 +6,33 @@ def main(genomon_conf, run_conf, sample_conf):
     import genomon_pipeline.core.setup_common as setup
     input_stages = (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq)
     setup.create_directories(genomon_conf, run_conf, input_stages, 'germ/data/snakefile.txt')
-    setup.touch_bam_tofastq(genomon_conf, run_conf, (sample_conf.bam_tofastq,))
+    setup.touch_bam_tofastq(run_conf, (sample_conf.bam_tofastq,))
     
-    # link fastq
-    linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf.fastq, sample_conf.fastq_src)
-    
-    # bam import
+    # dump conf.yaml
     import genomon_pipeline.germ.resource.fq2cram as rs_align
+    y = setup.dump_yaml_input_section(
+        run_conf, 
+        (sample_conf.bam_tofastq, ),
+        sample_conf.fastq,
+        sample_conf.bam_import, 
+        rs_align.OUTPUT_FORMAT
+    )
+
+    # link fastq
+    linked_fastqs = setup.link_input_fastq(run_conf, sample_conf.fastq, sample_conf.fastq_src)
+    
+    # link import bam
     output_bams = setup.link_import_bam(
-        genomon_conf, run_conf, sample_conf.bam_import, 
+        run_conf,
+        sample_conf.bam_import, 
         rs_align.BAM_POSTFIX, 
-        rs_align.BAI_POSTFIX, 
+        rs_align.BAI_POSTFIX,
         rs_align.OUTPUT_FORMAT.split("/")[0]
     )
     
+    # ######################
+    # create scripts
+    # ######################
     # bam to fastq
     import genomon_pipeline.germ.resource.bamtofastq as rs_bamtofastq
     output_fastqs = rs_bamtofastq.configure(genomon_conf, run_conf, sample_conf)
@@ -32,7 +45,6 @@ def main(genomon_conf, run_conf, sample_conf):
     for sample in linked_fastqs:
         sample_conf.fastq[sample] = linked_fastqs[sample]["fastq"]
         sample_conf.fastq_src[sample] = linked_fastqs[sample]["src"]
-
     
     align_bams = rs_align.configure(genomon_conf, run_conf, sample_conf)
     output_bams.update(align_bams)
@@ -41,15 +53,10 @@ def main(genomon_conf, run_conf, sample_conf):
     import genomon_pipeline.germ.resource.haplotypecaller as rs_mutation
     output_mutations = rs_mutation.configure(output_bams, genomon_conf, run_conf, sample_conf)
     
+    
+    # ######################
     # dump conf.yaml
-    y = setup.dump_yaml_input_section(
-        genomon_conf, 
-        run_conf, 
-        (sample_conf.bam_tofastq, ),
-        sample_conf.fastq,
-        sample_conf.bam_import, 
-        rs_align.OUTPUT_FORMAT
-    )
+    # ######################
     y["output_files"].extend(output_mutations)
     
     y["htc_samples"] = {}

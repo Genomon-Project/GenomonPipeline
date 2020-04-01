@@ -28,7 +28,7 @@ def create_directories(genomon_conf, run_conf, input_stages, snakefile_name):
             os.makedirs(run_conf.project_root + '/log/' + sample, exist_ok=True)
 
 # touch snakemake entry-file
-def touch_bam_tofastq(genomon_conf, run_conf, bam_tofastq_stages):
+def touch_bam_tofastq(run_conf, bam_tofastq_stages):
     if not type(bam_tofastq_stages) in [type(()), type([])]:
         raise Exception("type of bam_tofastq_stages must be tuple or list")
         
@@ -39,7 +39,7 @@ def touch_bam_tofastq(genomon_conf, run_conf, bam_tofastq_stages):
             open(wdir + '/' + sample + ".txt", "w").close()
 
 # link the input fastq to project directory
-def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
+def link_input_fastq(run_conf, fastq_stage, fastq_stage_src):
     linked_fastq = {}
     for sample in fastq_stage:
         fastq_dir = run_conf.project_root + '/fastq/' + sample
@@ -55,8 +55,8 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
             new_fastq_src += fastq_stage[sample][1]
 
             linked_fastq[sample] = {"fastq": [[], []], "src": new_fastq_src}
-            for (count, fastq_files) in enumerate(fastq_stage[sample][0]):
-                fastq_prefix, ext = os.path.splitext(fastq_files)
+            for (count, target_fastq) in enumerate(fastq_stage[sample][0]):
+                fastq_prefix, ext = os.path.splitext(target_fastq)
                 r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
                 r2 = fastq_dir + '/'+str(count+1)+'_2'+ ext
                 linked_fastq[sample]["fastq"][0] += [r1]
@@ -68,8 +68,8 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
 
         else:
             linked_fastq[sample] = {"fastq": [[]], "src": new_fastq_src}
-            for (count, fastq_files) in enumerate(fastq_stage[sample][0]):
-                fastq_prefix, ext = os.path.splitext(fastq_files)
+            for (count, target_fastq) in enumerate(fastq_stage[sample][0]):
+                fastq_prefix, ext = os.path.splitext(target_fastq)
                 r1 = fastq_dir + '/'+str(count+1)+'_1'+ ext
                 linked_fastq[sample]["fastq"][0] += [r1]
                 if not os.path.exists(r1):
@@ -78,7 +78,7 @@ def link_input_fastq(genomon_conf, run_conf, fastq_stage, fastq_stage_src):
     return linked_fastq
 
 # link the import bam to project directory
-def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_postfix, bai_postfix, subdir = "bam"):
+def link_import_bam(run_conf, bam_import_stage, bam_postfix, bai_postfix, subdir = "bam"):
     linked_bam = {}
     for sample in bam_import_stage:
         bam = bam_import_stage[sample]
@@ -89,38 +89,63 @@ def link_import_bam(genomon_conf, run_conf, bam_import_stage, bam_postfix, bai_p
             bai = ".bai"
         elif ext == ".cram":
             bai = ".crai"
-        linked_bam[sample] = link_dir +'/'+ sample + bam_postfix
 
-        if (not os.path.exists(link_dir +'/'+ sample + bam_postfix)) and (not os.path.exists(link_dir +'/'+ sample + bai_postfix)): 
-            os.symlink(bam, link_dir +'/'+ sample + bam_postfix)
+        link = link_dir +'/'+ sample + bam_postfix
+        link_bai = link_dir +'/'+ sample + bai_postfix
+        linked_bam[sample] = link
+        
+        if not os.path.exists(link):
+            os.symlink(bam, link)
+        if not os.path.exists(link_bai): 
             if (os.path.exists(bam + bai)):
-                os.symlink(bam + bai, link_dir +'/'+ sample + bai_postfix)
+                os.symlink(bam + bai, link_bai)
             elif (os.path.exists(bam_postfix + bai)):
-                os.symlink(bam_postfix + bai, link_dir +'/'+ sample + bai_postfix)
+                os.symlink(bam_postfix + bai, link_bai)
     return linked_bam
 
-
-def dump_yaml_input_section(genomon_conf, run_conf, bam_tofastq_stages, fastq_stage, bam_import_stage, bam_template):
+def dump_yaml_input_section(run_conf, bam_tofastq_stages, fastq_stage, bam_import_stage, bam_template):
     if not type(bam_tofastq_stages) in [type(()), type([])]:
         raise Exception("type of bam_tofastq_stages must be tuple or list")
     
-    samples = []
-    outputs =[]
+    input_aln = {}
+    outputs = []
+
+    bam_tofastq = {}
     for stage in bam_tofastq_stages:
         for sample in stage:
-            samples.append(sample)
-            outputs.append("fastq/%s/pass.txt" % (sample))
-        
-    input_aln = {}
+            bam_tofastq[sample] = stage[sample].split(";")
+            pass_txt = "fastq/%s/pass.txt" % (sample)
+            outputs.append(pass_txt)
+            input_aln[sample] = pass_txt
+
+    fastq_r1 = {}
+    fastq_r2 = {}
     for sample in fastq_stage:
-        input_aln[sample] = "fastq/%s/pass.txt" % (sample)
+        fastq_r1[sample] = []
+        fastq_r2[sample] = []
+        fastq_r1[sample].extend(fastq_stage[sample][0])
+        if len(fastq_stage[sample]) > 1:
+            fastq_r2[sample].extend(fastq_stage[sample][1])
+        
+        pass_txt = "fastq/%s/pass.txt" % (sample)
+        input_aln[sample] = pass_txt
+        outputs.append(pass_txt)
         outputs.append(bam_template.format(sample = sample))
     
+    bam_import = {}
     for sample in bam_import_stage:
-        input_aln[sample] = "fastq/%s/pass.txt" % (sample)
-        
-    return {
-        "samples": samples,
+        bam_import[sample] = bam_import_stage[sample]
+        pass_txt = "fastq/%s/pass.txt" % (sample)
+        outputs.append(pass_txt)
+        outputs.append(bam_template.format(sample = sample))
+
+    dumped = {
+        "output_files": outputs,
         "aln_samples": input_aln,
-        "output_files": outputs
+        "bam_tofastq": bam_tofastq,
+        "bam_import": bam_import,
+        "fastq_r1": fastq_r1,
+        "fastq_r2": fastq_r2,
     }
+    
+    return dumped

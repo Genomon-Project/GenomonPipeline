@@ -12,7 +12,11 @@ import shutil
 import unittest
 import subprocess
 import snakemake
-import tools
+
+def func_path (root, name):
+    wdir = root + "/" + name
+    ss_path = root + "/" + name + ".csv"
+    return (wdir, ss_path)
 
 BAM_IMP = "bam-import"
 BAM_2FQ = "bam-tofastq"
@@ -21,7 +25,7 @@ HT_CALL = "gatk-haplotypecaller-parabrics-compatible"
 
 class ConfigureTest(unittest.TestCase):
     
-    DATA_DIR = "/tmp/genomon_test_germ_configure"
+    DATA_DIR = "/tmp/temp-test/genomon_test_germ_configure"
     SAMPLE_DIR = DATA_DIR + "/samples"
     REMOVE = False
     SS_NAME = "/test.csv"
@@ -120,7 +124,7 @@ reference = {sample_dir}/reference/XXX.fa
         subprocess.check_call(['python', 'genomon_runner', '--version'])
     
     def test2_01_configure(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         options = [
             "germ",
             self.DATA_DIR + self.SS_NAME,
@@ -132,7 +136,7 @@ reference = {sample_dir}/reference/XXX.fa
         self.assertTrue(success)
 
     def test2_02_configure(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         options = [
             "germ",
             self.DATA_DIR + self.SS_NAME,
@@ -145,11 +149,11 @@ reference = {sample_dir}/reference/XXX.fa
         self.assertTrue(success)
 
     def test3_01_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
-""".format(sample_dir = self.DATA_DIR)
+""".format(sample_dir = self.SAMPLE_DIR)
         
         f = open(ss_path, "w")
         f.write(data_sample)
@@ -165,7 +169,7 @@ A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
         self.assertTrue(success)
 
     def test3_02_1_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[{bam2fq}]
 A_tumor,{sample_dir}/A.markdup.cram
@@ -185,7 +189,7 @@ A_tumor,{sample_dir}/A.markdup.cram
         self.assertTrue(success)
 
     def test3_03_bwa_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[{bamimp}]
 A_tumor,{sample_dir}/A.markdup.cram
@@ -205,7 +209,7 @@ A_tumor,{sample_dir}/A.markdup.cram
         self.assertTrue(success)
 
     def test4_01_htc_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[fastq]
 A_tumor,{sample_dir}/A1.fastq,{sample_dir}/A2.fastq
@@ -227,7 +231,7 @@ A_tumor
         self.assertTrue(success)
 
     def test4_02_htc_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[{bam2fq}]
 A_tumor,{sample_dir}/A.markdup.cram
@@ -249,7 +253,7 @@ A_tumor
         self.assertTrue(success)
 
     def test4_03_htc_limited(self):
-        (wdir, ss_path) = tools.func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
+        (wdir, ss_path) = func_path (self.DATA_DIR, sys._getframe().f_code.co_name)
         
         data_sample = """[{bamimp}]
 A_tumor,{sample_dir}/A.markdup.cram

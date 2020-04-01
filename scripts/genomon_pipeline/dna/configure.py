@@ -6,15 +6,33 @@ def main(genomon_conf, run_conf, sample_conf):
     import genomon_pipeline.core.setup_common as setup
     input_stages = (sample_conf.bam_import, sample_conf.fastq, sample_conf.bam_tofastq)
     setup.create_directories(genomon_conf, run_conf, input_stages, 'dna/data/snakefile.txt')
-    setup.touch_bam_tofastq(genomon_conf, run_conf, (sample_conf.bam_tofastq, ))
+    setup.touch_bam_tofastq(run_conf, (sample_conf.bam_tofastq, ))
     
-    # link fastq
-    linked_fastqs = setup.link_input_fastq(genomon_conf, run_conf, sample_conf.fastq, sample_conf.fastq_src)
-    
-    # bam import
+    # dump conf.yaml
     import genomon_pipeline.dna.resource.bwa_align as rs_align
-    output_bams = setup.link_import_bam(genomon_conf, run_conf, sample_conf.bam_import, rs_align.BAM_POSTFIX, rs_align.BAI_POSTFIX)
+    y = setup.dump_yaml_input_section(
+        run_conf, 
+        (sample_conf.bam_tofastq, ),
+        sample_conf.fastq,
+        sample_conf.bam_import, 
+        rs_align.OUTPUT_FORMAT
+    )
+
+    # link fastq
+    linked_fastqs = setup.link_input_fastq(run_conf, sample_conf.fastq, sample_conf.fastq_src)
     
+    # link import bam
+    output_bams = setup.link_import_bam(
+        run_conf, 
+        sample_conf.bam_import, 
+        rs_align.BAM_POSTFIX, 
+        rs_align.BAI_POSTFIX,
+        rs_align.OUTPUT_FORMAT.split("/")[0]
+    )
+
+    # ######################
+    # create scripts
+    # ######################
     # bam to fastq
     import genomon_pipeline.dna.resource.bamtofastq as rs_bamtofastq
     output_fastqs = rs_bamtofastq.configure(genomon_conf, run_conf, sample_conf)
@@ -47,15 +65,9 @@ def main(genomon_conf, run_conf, sample_conf):
     import genomon_pipeline.dna.resource.qc_merge as rs_qc_merge
     output_qc = rs_qc_merge.configure(output_bams, genomon_conf, run_conf, sample_conf)
 
+    # ######################
     # dump conf.yaml
-    y = setup.dump_yaml_input_section(
-        genomon_conf, 
-        run_conf, 
-        (sample_conf.bam_tofastq, ),
-        sample_conf.fastq,
-        sample_conf.bam_import, 
-        rs_align.OUTPUT_FORMAT
-    )
+    # ######################
     y["output_files"].extend(output_mutations)
     y["output_files"].extend(output_svs)
     y["output_files"].extend(output_bamstats)
